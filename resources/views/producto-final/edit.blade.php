@@ -1,29 +1,21 @@
-@extends('layouts.app')
+@extends('layouts.crud')
 
-@section('template_title')
-    {{ __('Update') }} Producto Final
-@endsection
+@section('title', 'Editar Producto Final')
 
 @section('content')
-    <section class="content container-fluid">
-        <div class="">
-            <div class="col-md-12">
+    <x-crud.page-header title="Editar producto final" :subtitle="'Actualiza ' . $productoFinal->nombre">
+        <x-slot:actions>
+            <a href="{{ route('producto-finals.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
+        </x-slot:actions>
+    </x-crud.page-header>
 
-                <div class="card card-default">
-                    <div class="card-header">
-                        <span class="card-title">{{ __('Update') }} Producto Final</span>
-                    </div>
-                    <div class="card-body bg-white">
-                        <form method="POST" action="{{ route('producto-finals.update', $productoFinal->id) }}"  role="form" enctype="multipart/form-data">
-                            {{ method_field('PATCH') }}
-                            @csrf
-
-                            @include('producto-final.form')
-
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <div class="card card-elevated">
+        <div class="card-body">
+            <form method="POST" action="{{ route('producto-finals.update', $productoFinal) }}" novalidate>
+                @method('PATCH')
+                @csrf
+                @include('producto-final.form', ['submitLabel' => 'Actualizar producto'])
+            </form>
         </div>
-    </section>
+    </div>
 @endsection

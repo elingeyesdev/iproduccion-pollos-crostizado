@@ -16,10 +16,18 @@ class ClienteController extends Controller
      */
     public function index(Request $request): View
     {
-        $clientes = Cliente::paginate();
+        $search = trim((string) $request->input('search'));
 
-        return view('cliente.index', compact('clientes'))
-            ->with('i', ($request->input('page', 1) - 1) * $clientes->perPage());
+        $clientes = Cliente::query()
+            ->when($search, function ($query) use ($search) {
+                $query->where('nombre', 'like', "%{$search}%")
+                    ->orWhere('telefono', 'like', "%{$search}%");
+            })
+            ->orderBy('nombre')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('cliente.index', compact('clientes', 'search'));
     }
 
     /**
@@ -40,26 +48,22 @@ class ClienteController extends Controller
         Cliente::create($request->validated());
 
         return Redirect::route('clientes.index')
-            ->with('success', 'Cliente created successfully.');
+            ->with('success', 'Cliente creado correctamente.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($id): View
+    public function show(Cliente $cliente): View
     {
-        $cliente = Cliente::find($id);
-
         return view('cliente.show', compact('cliente'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id): View
+    public function edit(Cliente $cliente): View
     {
-        $cliente = Cliente::find($id);
-
         return view('cliente.edit', compact('cliente'));
     }
 
@@ -71,14 +75,14 @@ class ClienteController extends Controller
         $cliente->update($request->validated());
 
         return Redirect::route('clientes.index')
-            ->with('success', 'Cliente updated successfully');
+            ->with('success', 'Cliente actualizado correctamente.');
     }
 
-    public function destroy($id): RedirectResponse
+    public function destroy(Cliente $cliente): RedirectResponse
     {
-        Cliente::find($id)->delete();
+        $cliente->delete();
 
         return Redirect::route('clientes.index')
-            ->with('success', 'Cliente deleted successfully');
+            ->with('success', 'Cliente eliminado correctamente.');
     }
 }

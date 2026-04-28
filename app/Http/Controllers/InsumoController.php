@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CategoriaInsumo;
 use App\Models\Insumo;
+use App\Models\UnidadMedida;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\InsumoRequest;
@@ -16,10 +18,28 @@ class InsumoController extends Controller
      */
     public function index(Request $request): View
     {
-        $insumos = Insumo::paginate();
+        $search = trim((string) $request->input('search'));
 
-        return view('insumo.index', compact('insumos'))
-            ->with('i', ($request->input('page', 1) - 1) * $insumos->perPage());
+        $insumos = Insumo::query()
+            ->with([
+                'categoriaInsumo:id,nombre',
+                'unidadMedida:id,nombre,abreviatura',
+            ])
+            ->when($search, function ($query) use ($search) {
+                $query->where('nombre', 'like', "%{$search}%")
+                    ->orWhereHas('categoriaInsumo', function ($relatedQuery) use ($search) {
+                        $relatedQuery->where('nombre', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('unidadMedida', function ($relatedQuery) use ($search) {
+                        $relatedQuery->where('nombre', 'like', "%{$search}%")
+                            ->orWhere('abreviatura', 'like', "%{$search}%");
+                    });
+            })
+            ->orderBy('nombre')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('insumo.index', compact('insumos', 'search'));
     }
 
     /**
@@ -28,8 +48,10 @@ class InsumoController extends Controller
     public function create(): View
     {
         $insumo = new Insumo();
+        $categorias = CategoriaInsumo::orderBy('nombre')->pluck('nombre', 'id');
+        $unidades = UnidadMedida::orderBy('nombre')->get();
 
-        return view('insumo.create', compact('insumo'));
+        return view('insumo.create', compact('insumo', 'categorias', 'unidades'));
     }
 
     /**
@@ -40,15 +62,15 @@ class InsumoController extends Controller
         Insumo::create($request->validated());
 
         return Redirect::route('insumos.index')
-            ->with('success', 'Insumo created successfully.');
+            ->with('success', 'Insumo creado correctamente.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($id): View
+    public function show(Insumo $insumo): View
     {
-        $insumo = Insumo::find($id);
+        $insumo->load(['categoriaInsumo:id,nombre', 'unidadMedida:id,nombre,abreviatura']);
 
         return view('insumo.show', compact('insumo'));
     }
@@ -56,11 +78,12 @@ class InsumoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id): View
+    public function edit(Insumo $insumo): View
     {
-        $insumo = Insumo::find($id);
+        $categorias = CategoriaInsumo::orderBy('nombre')->pluck('nombre', 'id');
+        $unidades = UnidadMedida::orderBy('nombre')->get();
 
-        return view('insumo.edit', compact('insumo'));
+        return view('insumo.edit', compact('insumo', 'categorias', 'unidades'));
     }
 
     /**
@@ -71,14 +94,14 @@ class InsumoController extends Controller
         $insumo->update($request->validated());
 
         return Redirect::route('insumos.index')
-            ->with('success', 'Insumo updated successfully');
+            ->with('success', 'Insumo actualizado correctamente.');
     }
 
-    public function destroy($id): RedirectResponse
+    public function destroy(Insumo $insumo): RedirectResponse
     {
-        Insumo::find($id)->delete();
+        $insumo->delete();
 
         return Redirect::route('insumos.index')
-            ->with('success', 'Insumo deleted successfully');
+            ->with('success', 'Insumo eliminado correctamente.');
     }
 }

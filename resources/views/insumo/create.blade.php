@@ -1,28 +1,20 @@
-@extends('layouts.app')
+@extends('layouts.crud')
 
-@section('template_title')
-    {{ __('Create') }} Insumo
-@endsection
+@section('title', 'Crear Insumo')
 
 @section('content')
-    <section class="content container-fluid">
-        <div class="row">
-            <div class="col-md-12">
+    <x-crud.page-header title="Crear insumo" subtitle="Registra un nuevo insumo de producción.">
+        <x-slot:actions>
+            <a href="{{ route('insumos.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
+        </x-slot:actions>
+    </x-crud.page-header>
 
-                <div class="card card-default">
-                    <div class="card-header">
-                        <span class="card-title">{{ __('Create') }} Insumo</span>
-                    </div>
-                    <div class="card-body bg-white">
-                        <form method="POST" action="{{ route('insumos.store') }}"  role="form" enctype="multipart/form-data">
-                            @csrf
-
-                            @include('insumo.form')
-
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <div class="card card-elevated">
+        <div class="card-body">
+            <form method="POST" action="{{ route('insumos.store') }}" novalidate>
+                @csrf
+                @include('insumo.form', ['submitLabel' => 'Guardar insumo'])
+            </form>
         </div>
-    </section>
+    </div>
 @endsection

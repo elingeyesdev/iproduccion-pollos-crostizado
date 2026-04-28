@@ -1,83 +1,83 @@
-@extends('layouts.app')
+@extends('layouts.crud')
 
-@section('template_title')
-    Insumos
-@endsection
+@section('title', 'Insumos')
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+    <x-crud.page-header title="Insumos" subtitle="Catálogo de insumos para producción.">
+        <x-slot:actions>
+            <a href="{{ route('insumos.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nuevo insumo</a>
+        </x-slot:actions>
+    </x-crud.page-header>
 
-                            <span id="card_title">
-                                {{ __('Insumos') }}
-                            </span>
-
-                             <div class="float-right">
-                                <a href="{{ route('insumos.create') }}" class="btn btn-primary btn-sm float-right"  data-placement="left">
-                                  {{ __('Create New') }}
-                                </a>
-                              </div>
-                        </div>
-                    </div>
-                    @if ($message = Session::get('success'))
-                        <div class="alert alert-success m-4">
-                            <p>{{ $message }}</p>
-                        </div>
-                    @endif
-
-                    <div class="card-body bg-white">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead class="thead">
-                                    <tr>
-                                        <th>No</th>
-                                        
-									<th >Nombre</th>
-									<th >Categoria Insumo Id</th>
-									<th >Unidad Medida Id</th>
-									<th >Preciounitario</th>
-									<th >Stockactual</th>
-									<th >Stockminimo</th>
-									<th >Estado</th>
-
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($insumos as $insumo)
-                                        <tr>
-                                            <td>{{ ++$i }}</td>
-                                            
-										<td >{{ $insumo->nombre }}</td>
-										<td >{{ $insumo->categoria_insumo_id }}</td>
-										<td >{{ $insumo->unidad_medida_id }}</td>
-										<td >{{ $insumo->precioUnitario }}</td>
-										<td >{{ $insumo->stockActual }}</td>
-										<td >{{ $insumo->stockMinimo }}</td>
-										<td >{{ $insumo->estado }}</td>
-
-                                            <td>
-                                                <form action="{{ route('insumos.destroy', $insumo->id) }}" method="POST">
-                                                    <a class="btn btn-sm btn-primary " href="{{ route('insumos.show', $insumo->id) }}"><i class="fa fa-fw fa-eye"></i> {{ __('Show') }}</a>
-                                                    <a class="btn btn-sm btn-success" href="{{ route('insumos.edit', $insumo->id) }}"><i class="fa fa-fw fa-edit"></i> {{ __('Edit') }}</a>
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="event.preventDefault(); confirm('Are you sure to delete?') ? this.closest('form').submit() : false;"><i class="fa fa-fw fa-trash"></i> {{ __('Delete') }}</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+    <div class="card card-elevated mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('insumos.index') }}" class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <label for="search" class="form-label fw-semibold">Buscar</label>
+                    <input id="search" type="text" name="search" value="{{ $search }}" class="form-control" placeholder="Buscar por insumo, categoría o unidad">
                 </div>
-                {!! $insumos->withQueryString()->links() !!}
-            </div>
+                <div class="col-md-6 d-flex gap-2">
+                    <button class="btn btn-app-primary" type="submit"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar</button>
+                    <a href="{{ route('insumos.index') }}" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card card-elevated">
+        <div class="card-body table-responsive">
+            <table class="table align-middle table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Unidad</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($insumos as $insumo)
+                        <tr>
+                            <td>{{ $insumos->firstItem() + $loop->index }}</td>
+                            <td class="fw-semibold">{{ $insumo->nombre }}</td>
+                            <td>{{ $insumo->categoriaInsumo?->nombre ?? '-' }}</td>
+                            <td>{{ $insumo->unidadMedida?->abreviatura ?? $insumo->unidadMedida?->nombre ?? '-' }}</td>
+                            <td>S/ {{ number_format((float) $insumo->precioUnitario, 2) }}</td>
+                            <td>{{ (int) $insumo->stockActual }} / min {{ (int) $insumo->stockMinimo }}</td>
+                            <td>
+                                <span class="badge rounded-pill {{ (int) $insumo->estado === 1 ? 'badge-state' : 'text-bg-secondary' }}">
+                                    {{ (int) $insumo->estado === 1 ? 'Activo' : 'Inactivo' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ route('insumos.show', $insumo) }}" class="btn btn-sm btn-light border"><i class="fa-solid fa-eye me-1"></i> Ver</a>
+                                    <a href="{{ route('insumos.edit', $insumo) }}" class="btn btn-sm btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
+                                    <form id="delete-form-insumo-{{ $insumo->id }}" action="{{ route('insumos.destroy', $insumo) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteInsumoModal{{ $insumo->id }}"><i class="fa-solid fa-trash me-1"></i> Eliminar</button>
+                                    </form>
+                                    <x-crud.delete-modal
+                                        :id="'deleteInsumoModal' . $insumo->id"
+                                        title="Eliminar insumo"
+                                        :message="'¿Seguro que deseas eliminar \'' . $insumo->nombre . '\'?'"
+                                        :form-id="'delete-form-insumo-' . $insumo->id"
+                                    />
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="8" class="text-center py-4 text-muted">No hay insumos registrados.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-end">{{ $insumos->links() }}</div>
         </div>
     </div>
 @endsection

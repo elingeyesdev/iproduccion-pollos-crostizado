@@ -1,29 +1,26 @@
-@extends('layouts.app')
+@extends('layouts.crud')
 
-@section('template_title')
-    {{ __('Update') }} Unidad Medida
-@endsection
+@section('title', 'Editar Unidad de Medida')
 
 @section('content')
-    <section class="content container-fluid">
-        <div class="">
-            <div class="col-md-12">
+    <x-crud.page-header
+        title="Editar unidad de medida"
+        subtitle="Actualiza la información de {{ $unidadMedida->nombre }}"
+    >
+        <x-slot:actions>
+            <a href="{{ route('unidad-medidas.index') }}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Volver al listado
+            </a>
+        </x-slot:actions>
+    </x-crud.page-header>
 
-                <div class="card card-default">
-                    <div class="card-header">
-                        <span class="card-title">{{ __('Update') }} Unidad Medida</span>
-                    </div>
-                    <div class="card-body bg-white">
-                        <form method="POST" action="{{ route('unidad-medidas.update', $unidadMedida->id) }}"  role="form" enctype="multipart/form-data">
-                            {{ method_field('PATCH') }}
-                            @csrf
-
-                            @include('unidad-medida.form')
-
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <div class="card card-elevated">
+        <div class="card-body">
+            <form method="POST" action="{{ route('unidad-medidas.update', $unidadMedida) }}" novalidate>
+                @method('PATCH')
+                @csrf
+                @include('unidad-medida.form', ['submitLabel' => 'Actualizar unidad'])
+            </form>
         </div>
-    </section>
+    </div>
 @endsection

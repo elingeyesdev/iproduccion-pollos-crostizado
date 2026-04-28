@@ -16,10 +16,18 @@ class CategoriaInsumoController extends Controller
      */
     public function index(Request $request): View
     {
-        $categoriaInsumos = CategoriaInsumo::paginate();
+        $search = trim((string) $request->input('search'));
 
-        return view('categoria-insumo.index', compact('categoriaInsumos'))
-            ->with('i', ($request->input('page', 1) - 1) * $categoriaInsumos->perPage());
+        $categoriaInsumos = CategoriaInsumo::query()
+            ->when($search, function ($query) use ($search) {
+                $query->where('nombre', 'like', "%{$search}%")
+                    ->orWhere('descripcion', 'like', "%{$search}%");
+            })
+            ->orderBy('nombre')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('categoria-insumo.index', compact('categoriaInsumos', 'search'));
     }
 
     /**
@@ -40,26 +48,22 @@ class CategoriaInsumoController extends Controller
         CategoriaInsumo::create($request->validated());
 
         return Redirect::route('categoria-insumos.index')
-            ->with('success', 'CategoriaInsumo created successfully.');
+            ->with('success', 'Categoría creada correctamente.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($id): View
+    public function show(CategoriaInsumo $categoriaInsumo): View
     {
-        $categoriaInsumo = CategoriaInsumo::find($id);
-
         return view('categoria-insumo.show', compact('categoriaInsumo'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id): View
+    public function edit(CategoriaInsumo $categoriaInsumo): View
     {
-        $categoriaInsumo = CategoriaInsumo::find($id);
-
         return view('categoria-insumo.edit', compact('categoriaInsumo'));
     }
 
@@ -71,14 +75,14 @@ class CategoriaInsumoController extends Controller
         $categoriaInsumo->update($request->validated());
 
         return Redirect::route('categoria-insumos.index')
-            ->with('success', 'CategoriaInsumo updated successfully');
+            ->with('success', 'Categoría actualizada correctamente.');
     }
 
-    public function destroy($id): RedirectResponse
+    public function destroy(CategoriaInsumo $categoriaInsumo): RedirectResponse
     {
-        CategoriaInsumo::find($id)->delete();
+        $categoriaInsumo->delete();
 
         return Redirect::route('categoria-insumos.index')
-            ->with('success', 'CategoriaInsumo deleted successfully');
+            ->with('success', 'Categoría eliminada correctamente.');
     }
 }

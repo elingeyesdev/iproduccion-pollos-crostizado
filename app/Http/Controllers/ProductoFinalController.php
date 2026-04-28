@@ -16,10 +16,18 @@ class ProductoFinalController extends Controller
      */
     public function index(Request $request): View
     {
-        $productoFinals = ProductoFinal::paginate();
+        $search = trim((string) $request->input('search'));
 
-        return view('producto-final.index', compact('productoFinals'))
-            ->with('i', ($request->input('page', 1) - 1) * $productoFinals->perPage());
+        $productoFinals = ProductoFinal::query()
+            ->when($search, function ($query) use ($search) {
+                $query->where('nombre', 'like', "%{$search}%")
+                    ->orWhere('descripcion', 'like', "%{$search}%");
+            })
+            ->orderBy('nombre')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('producto-final.index', compact('productoFinals', 'search'));
     }
 
     /**
@@ -40,26 +48,22 @@ class ProductoFinalController extends Controller
         ProductoFinal::create($request->validated());
 
         return Redirect::route('producto-finals.index')
-            ->with('success', 'ProductoFinal created successfully.');
+            ->with('success', 'Producto final creado correctamente.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($id): View
+    public function show(ProductoFinal $productoFinal): View
     {
-        $productoFinal = ProductoFinal::find($id);
-
         return view('producto-final.show', compact('productoFinal'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id): View
+    public function edit(ProductoFinal $productoFinal): View
     {
-        $productoFinal = ProductoFinal::find($id);
-
         return view('producto-final.edit', compact('productoFinal'));
     }
 
@@ -71,14 +75,14 @@ class ProductoFinalController extends Controller
         $productoFinal->update($request->validated());
 
         return Redirect::route('producto-finals.index')
-            ->with('success', 'ProductoFinal updated successfully');
+            ->with('success', 'Producto final actualizado correctamente.');
     }
 
-    public function destroy($id): RedirectResponse
+    public function destroy(ProductoFinal $productoFinal): RedirectResponse
     {
-        ProductoFinal::find($id)->delete();
+        $productoFinal->delete();
 
         return Redirect::route('producto-finals.index')
-            ->with('success', 'ProductoFinal deleted successfully');
+            ->with('success', 'Producto final eliminado correctamente.');
     }
 }

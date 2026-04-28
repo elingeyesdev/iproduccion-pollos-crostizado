@@ -16,10 +16,18 @@ class UnidadMedidaController extends Controller
      */
     public function index(Request $request): View
     {
-        $unidadMedidas = UnidadMedida::paginate();
+        $search = trim((string) $request->input('search'));
 
-        return view('unidad-medida.index', compact('unidadMedidas'))
-            ->with('i', ($request->input('page', 1) - 1) * $unidadMedidas->perPage());
+        $unidadMedidas = UnidadMedida::query()
+            ->when($search, function ($query) use ($search) {
+                $query->where('nombre', 'like', "%{$search}%")
+                    ->orWhere('abreviatura', 'like', "%{$search}%");
+            })
+            ->orderBy('nombre')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('unidad-medida.index', compact('unidadMedidas', 'search'));
     }
 
     /**
@@ -40,26 +48,22 @@ class UnidadMedidaController extends Controller
         UnidadMedida::create($request->validated());
 
         return Redirect::route('unidad-medidas.index')
-            ->with('success', 'UnidadMedida created successfully.');
+            ->with('success', 'Unidad de medida creada correctamente.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($id): View
+    public function show(UnidadMedida $unidadMedida): View
     {
-        $unidadMedida = UnidadMedida::find($id);
-
         return view('unidad-medida.show', compact('unidadMedida'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id): View
+    public function edit(UnidadMedida $unidadMedida): View
     {
-        $unidadMedida = UnidadMedida::find($id);
-
         return view('unidad-medida.edit', compact('unidadMedida'));
     }
 
@@ -71,14 +75,14 @@ class UnidadMedidaController extends Controller
         $unidadMedida->update($request->validated());
 
         return Redirect::route('unidad-medidas.index')
-            ->with('success', 'UnidadMedida updated successfully');
+            ->with('success', 'Unidad de medida actualizada correctamente.');
     }
 
-    public function destroy($id): RedirectResponse
+    public function destroy(UnidadMedida $unidadMedida): RedirectResponse
     {
-        UnidadMedida::find($id)->delete();
+        $unidadMedida->delete();
 
         return Redirect::route('unidad-medidas.index')
-            ->with('success', 'UnidadMedida deleted successfully');
+            ->with('success', 'Unidad de medida eliminada correctamente.');
     }
 }

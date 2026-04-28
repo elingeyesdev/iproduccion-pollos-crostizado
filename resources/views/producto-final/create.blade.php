@@ -1,28 +1,20 @@
-@extends('layouts.app')
+@extends('layouts.crud')
 
-@section('template_title')
-    {{ __('Create') }} Producto Final
-@endsection
+@section('title', 'Crear Producto Final')
 
 @section('content')
-    <section class="content container-fluid">
-        <div class="row">
-            <div class="col-md-12">
+    <x-crud.page-header title="Crear producto final" subtitle="Registra un nuevo producto para ventas.">
+        <x-slot:actions>
+            <a href="{{ route('producto-finals.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
+        </x-slot:actions>
+    </x-crud.page-header>
 
-                <div class="card card-default">
-                    <div class="card-header">
-                        <span class="card-title">{{ __('Create') }} Producto Final</span>
-                    </div>
-                    <div class="card-body bg-white">
-                        <form method="POST" action="{{ route('producto-finals.store') }}"  role="form" enctype="multipart/form-data">
-                            @csrf
-
-                            @include('producto-final.form')
-
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <div class="card card-elevated">
+        <div class="card-body">
+            <form method="POST" action="{{ route('producto-finals.store') }}" novalidate>
+                @csrf
+                @include('producto-final.form', ['submitLabel' => 'Guardar producto'])
+            </form>
         </div>
-    </section>
+    </div>
 @endsection

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
  * Class Role
@@ -21,120 +21,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property RoleHasPermission[] $roleHasPermissions
  * @property ModelHasRole[] $modelHasRoles
  * @property RoleHasPermission[] $roleHasPermissions
- * @property ModelHasRole[] $modelHasRoles
- * @property RoleHasPermission[] $roleHasPermissions
- * @property ModelHasRole[] $modelHasRoles
- * @property RoleHasPermission[] $roleHasPermissions
- * @package App
+ * @package 
  * @mixin \Illuminate\Database\Eloquent\Builder
  */
-class Role extends Model
+class Role extends SpatieRole
 {
-    
     protected $perPage = 20;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = ['name', 'guard_name'];
-
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function modelHasRoles()
-    {
-        return $this->hasMany(\App\Models\ModelHasRole::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function roleHasPermissions()
-    {
-        return $this->hasMany(\App\Models\RoleHasPermission::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function modelHasRoles()
-    {
-        return $this->hasMany(\App\Models\ModelHasRole::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function roleHasPermissions()
-    {
-        return $this->hasMany(\App\Models\RoleHasPermission::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function modelHasRoles()
-    {
-        return $this->hasMany(\App\Models\ModelHasRole::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function roleHasPermissions()
-    {
-        return $this->hasMany(\App\Models\RoleHasPermission::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function modelHasRoles()
-    {
-        return $this->hasMany(\App\Models\ModelHasRole::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function roleHasPermissions()
-    {
-        return $this->hasMany(\App\Models\RoleHasPermission::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function modelHasRoles()
-    {
-        return $this->hasMany(\App\Models\ModelHasRole::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function roleHasPermissions()
-    {
-        return $this->hasMany(\App\Models\RoleHasPermission::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function modelHasRoles()
-    {
-        return $this->hasMany(\App\Models\ModelHasRole::class, 'id', 'role_id');
-    }
-    
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function roleHasPermissions()
-    {
-        return $this->hasMany(\App\Models\RoleHasPermission::class, 'id', 'role_id');
-    }
     
 }

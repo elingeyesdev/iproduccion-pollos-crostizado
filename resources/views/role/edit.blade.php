@@ -1,29 +1,23 @@
-@extends('layouts.app')
+@extends('layouts.crud')
 
-@section('template_title')
-    {{ __('Update') }} Role
-@endsection
+@section('title', 'Editar Rol')
 
 @section('content')
-    <section class="content container-fluid">
-        <div class="">
-            <div class="col-md-12">
+    <x-crud.page-header title="Editar rol" :subtitle="'Actualiza ' . $role->name">
+        <x-slot:actions>
+            <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Volver
+            </a>
+        </x-slot:actions>
+    </x-crud.page-header>
 
-                <div class="card card-default">
-                    <div class="card-header">
-                        <span class="card-title">{{ __('Update') }} Role</span>
-                    </div>
-                    <div class="card-body bg-white">
-                        <form method="POST" action="{{ route('roles.update', $role->id) }}"  role="form" enctype="multipart/form-data">
-                            {{ method_field('PATCH') }}
-                            @csrf
-
-                            @include('role.form')
-
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <div class="card card-elevated">
+        <div class="card-body">
+            <form method="POST" action="{{ route('roles.update', $role) }}" novalidate>
+                @method('PATCH')
+                @csrf
+                @include('role.form', ['submitLabel' => 'Actualizar rol'])
+            </form>
         </div>
-    </section>
+    </div>
 @endsection

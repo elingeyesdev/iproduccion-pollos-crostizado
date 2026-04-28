@@ -1,74 +1,101 @@
-@extends('layouts.app')
+@extends('layouts.crud')
 
-@section('template_title')
-    Categoria Insumos
-@endsection
+@section('title', 'Categorias de Insumo')
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+    <x-crud.page-header title="Categorias de insumo" subtitle="Administra las categorias para clasificar insumos.">
+        <x-slot:actions>
+            <a href="{{ route('categoria-insumos.create') }}" class="btn btn-app-primary">
+                <i class="fa-solid fa-plus me-1"></i> Nueva categoria
+            </a>
+        </x-slot:actions>
+    </x-crud.page-header>
 
-                            <span id="card_title">
-                                {{ __('Categoria Insumos') }}
-                            </span>
-
-                             <div class="float-right">
-                                <a href="{{ route('categoria-insumos.create') }}" class="btn btn-primary btn-sm float-right"  data-placement="left">
-                                  {{ __('Create New') }}
-                                </a>
-                              </div>
-                        </div>
-                    </div>
-                    @if ($message = Session::get('success'))
-                        <div class="alert alert-success m-4">
-                            <p>{{ $message }}</p>
-                        </div>
-                    @endif
-
-                    <div class="card-body bg-white">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead class="thead">
-                                    <tr>
-                                        <th>No</th>
-                                        
-									<th >Nombre</th>
-									<th >Descripcion</th>
-									<th >Estado</th>
-
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($categoriaInsumos as $categoriaInsumo)
-                                        <tr>
-                                            <td>{{ ++$i }}</td>
-                                            
-										<td >{{ $categoriaInsumo->nombre }}</td>
-										<td >{{ $categoriaInsumo->descripcion }}</td>
-										<td >{{ $categoriaInsumo->estado }}</td>
-
-                                            <td>
-                                                <form action="{{ route('categoria-insumos.destroy', $categoriaInsumo->id) }}" method="POST">
-                                                    <a class="btn btn-sm btn-primary " href="{{ route('categoria-insumos.show', $categoriaInsumo->id) }}"><i class="fa fa-fw fa-eye"></i> {{ __('Show') }}</a>
-                                                    <a class="btn btn-sm btn-success" href="{{ route('categoria-insumos.edit', $categoriaInsumo->id) }}"><i class="fa fa-fw fa-edit"></i> {{ __('Edit') }}</a>
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="event.preventDefault(); confirm('Are you sure to delete?') ? this.closest('form').submit() : false;"><i class="fa fa-fw fa-trash"></i> {{ __('Delete') }}</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+    <div class="card card-elevated mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('categoria-insumos.index') }}" class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <label for="search" class="form-label fw-semibold">Buscar</label>
+                    <input
+                        id="search"
+                        type="text"
+                        name="search"
+                        value="{{ $search }}"
+                        class="form-control"
+                        placeholder="Buscar por nombre o descripcion"
+                    >
                 </div>
-                {!! $categoriaInsumos->withQueryString()->links() !!}
+                <div class="col-md-6 d-flex gap-2">
+                    <button class="btn btn-app-primary" type="submit">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i> Buscar
+                    </button>
+                    <a href="{{ route('categoria-insumos.index') }}" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card card-elevated">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>Descripcion</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($categoriaInsumos as $categoriaInsumo)
+                            <tr>
+                                <td>{{ $categoriaInsumos->firstItem() + $loop->index }}</td>
+                                <td class="fw-semibold">{{ $categoriaInsumo->nombre }}</td>
+                                <td>{{ $categoriaInsumo->descripcion }}</td>
+                                <td>
+                                    <span class="badge rounded-pill {{ (int) $categoriaInsumo->estado === 1 ? 'badge-state' : 'text-bg-secondary' }}">
+                                        {{ (int) $categoriaInsumo->estado === 1 ? 'Activo' : 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{{ route('categoria-insumos.show', $categoriaInsumo) }}" class="btn btn-sm btn-light border" title="Ver">
+                                            <i class="fa-solid fa-eye me-1"></i> Ver
+                                        </a>
+                                        <a href="{{ route('categoria-insumos.edit', $categoriaInsumo) }}" class="btn btn-sm btn-app-outline" title="Editar">
+                                            <i class="fa-solid fa-pen me-1"></i> Editar
+                                        </a>
+
+                                        <form id="delete-form-{{ $categoriaInsumo->id }}" action="{{ route('categoria-insumos.destroy', $categoriaInsumo) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $categoriaInsumo->id }}" title="Eliminar">
+                                                <i class="fa-solid fa-trash me-1"></i> Eliminar
+                                            </button>
+                                        </form>
+
+                                        <x-crud.delete-modal
+                                            :id="'deleteModal' . $categoriaInsumo->id"
+                                            title="Eliminar categoria"
+                                            :message="'¿Seguro que deseas eliminar \'' . $categoriaInsumo->nombre . '\'? Esta accion no se puede deshacer.'"
+                                            :form-id="'delete-form-' . $categoriaInsumo->id"
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No hay registros para mostrar.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                {{ $categoriaInsumos->links() }}
             </div>
         </div>
     </div>

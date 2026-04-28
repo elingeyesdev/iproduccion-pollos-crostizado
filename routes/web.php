@@ -29,13 +29,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('/users', UserController::class);
-    Route::resource('/categoria-insumo', CategoriaInsumoController::class);
-    Route::resource('/producto-final', ProductoFinalController::class);
-    Route::resource('/categorias', CategoriaInsumoController::class);
-    Route::resource('/unidad_medida', UnidadMedidaController::class);
-    Route::resource('/roles', RoleController::class);
-    Route::resource('/insumo', InsumoController::class);
-    Route::resource('/clientes', ClienteController::class);
+    Route::resource('categoria-insumos', CategoriaInsumoController::class);
+    Route::resource('producto-finals', ProductoFinalController::class);
+    Route::resource('categorias', CategoriaInsumoController::class);
+    Route::resource('unidad-medidas', UnidadMedidaController::class);
+    Route::resource('roles', RoleController::class);
+    Route::resource('insumos', InsumoController::class);
+    Route::resource('clientes', ClienteController::class);
 
 
 });

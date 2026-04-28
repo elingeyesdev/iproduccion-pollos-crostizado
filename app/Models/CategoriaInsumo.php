@@ -36,7 +36,7 @@ class CategoriaInsumo extends Model
      */
     public function insumos()
     {
-        return $this->hasMany(\App\Models\Insumo::class, 'id', 'categoria_insumo_id');
+        return $this->hasMany(\App\Models\Insumo::class, 'categoria_insumo_id', 'id');
     }
     
 }

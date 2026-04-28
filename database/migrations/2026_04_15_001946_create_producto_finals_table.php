@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('unidad_medida', function (Blueprint $table) {
+        Schema::create('producto_finals', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
             $table->string('nombre');
-            $table->string('abreviatura');
-            $table->double('factor_conversion')->default(1);
+            $table->foreignId('categoria_producto_id')->constrained('categorias_produtos')->onDelete('cascade');
+            $table->string('descripcion');
+            $table->double('precio')->default(0);
             $table->integer('estado');
-            
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('unidad_medida');
+        Schema::dropIfExists('producto_finals');
     }
 };

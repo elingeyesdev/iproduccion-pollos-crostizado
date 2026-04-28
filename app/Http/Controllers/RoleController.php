@@ -16,10 +16,18 @@ class RoleController extends Controller
      */
     public function index(Request $request): View
     {
-        $roles = Role::paginate();
+        $search = trim((string) $request->input('search'));
 
-        return view('role.index', compact('roles'))
-            ->with('i', ($request->input('page', 1) - 1) * $roles->perPage());
+        $roles = Role::query()
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('guard_name', 'like', "%{$search}%");
+            })
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('role.index', compact('roles', 'search'));
     }
 
     /**
@@ -40,26 +48,22 @@ class RoleController extends Controller
         Role::create($request->validated());
 
         return Redirect::route('roles.index')
-            ->with('success', 'Role created successfully.');
+            ->with('success', 'Rol creado correctamente.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($id): View
+    public function show(Role $role): View
     {
-        $role = Role::find($id);
-
         return view('role.show', compact('role'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id): View
+    public function edit(Role $role): View
     {
-        $role = Role::find($id);
-
         return view('role.edit', compact('role'));
     }
 
@@ -71,14 +75,14 @@ class RoleController extends Controller
         $role->update($request->validated());
 
         return Redirect::route('roles.index')
-            ->with('success', 'Role updated successfully');
+            ->with('success', 'Rol actualizado correctamente.');
     }
 
-    public function destroy($id): RedirectResponse
+    public function destroy(Role $role): RedirectResponse
     {
-        Role::find($id)->delete();
+        $role->delete();
 
         return Redirect::route('roles.index')
-            ->with('success', 'Role deleted successfully');
+            ->with('success', 'Rol eliminado correctamente.');
     }
 }

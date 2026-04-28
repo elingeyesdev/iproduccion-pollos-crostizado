@@ -22,8 +22,25 @@ class RoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-			'name' => 'required|string',
-			'guard_name' => 'required|string',
+			'name' => 'required|string|max:100',
+			'guard_name' => 'required|string|in:web,api',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'name' => 'nombre del rol',
+            'guard_name' => 'guard',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'required' => 'El campo :attribute es obligatorio.',
+            'max' => 'El campo :attribute excede el límite permitido.',
+            'in' => 'El valor seleccionado para :attribute no es válido.',
         ];
     }
 }

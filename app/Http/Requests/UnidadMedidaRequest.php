@@ -22,10 +22,32 @@ class UnidadMedidaRequest extends FormRequest
     public function rules(): array
     {
         return [
-			'nombre' => 'required|string',
-			'abreviatura' => 'required|string',
-			'factor_conversion' => 'required',
-			'estado' => 'required',
+			'nombre' => 'required|string|max:100',
+			'abreviatura' => 'required|string|max:20',
+			'factor_conversion' => 'required|numeric|min:0.0001',
+			'estado' => 'required|integer|in:0,1',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'nombre' => 'nombre',
+            'abreviatura' => 'abreviatura',
+            'factor_conversion' => 'factor de conversión',
+            'estado' => 'estado',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'required' => 'El campo :attribute es obligatorio.',
+            'numeric' => 'El campo :attribute debe ser numérico.',
+            'integer' => 'El campo :attribute debe ser un número entero.',
+            'in' => 'El valor de :attribute no es válido.',
+            'min' => 'El campo :attribute debe ser mayor que 0.',
+            'max' => 'El campo :attribute excede el límite permitido.',
         ];
     }
 }

@@ -22,9 +22,28 @@ class CategoriaInsumoRequest extends FormRequest
     public function rules(): array
     {
         return [
-			'nombre' => 'required|string',
-			'descripcion' => 'required|string',
-			'estado' => 'required',
+			'nombre' => 'required|string|max:100',
+			'descripcion' => 'required|string|max:255',
+			'estado' => 'required|integer|in:0,1',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'nombre' => 'nombre',
+            'descripcion' => 'descripción',
+            'estado' => 'estado',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'required' => 'El campo :attribute es obligatorio.',
+            'integer' => 'El campo :attribute debe ser un número entero.',
+            'in' => 'El valor de :attribute no es válido.',
+            'max' => 'El campo :attribute excede el límite permitido.',
         ];
     }
 }

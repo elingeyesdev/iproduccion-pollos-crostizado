@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('insumo', function (Blueprint $table) {
+        Schema::create('unidad_medidas', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
             $table->string('nombre');
-            $table->foreignId('categoria_insumo_id')->constrained('categoria_insumo')->onDelete('cascade');
-            $table->foreignId('unidad_medida_id')->constrained('unidad_medida')->onDelete('cascade');
-            $table->double('precioUnitario')->default(0);
-            $table->integer('stockActual')->default(0);
-            $table->integer('stockMinimo')->default(0);
+            $table->string('abreviatura');
+            $table->double('factor_conversion')->default(1);
             $table->integer('estado');
+            
         });
     }
 
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('insumo');
+        Schema::dropIfExists('unidad_medidas');
     }
 };

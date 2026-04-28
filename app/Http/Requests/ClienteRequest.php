@@ -22,8 +22,24 @@ class ClienteRequest extends FormRequest
     public function rules(): array
     {
         return [
-			'nombre' => 'required|string',
-			'telefono' => 'required|string',
+			'nombre' => 'required|string|max:150',
+			'telefono' => 'required|string|max:20',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'nombre' => 'nombre',
+            'telefono' => 'teléfono',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'required' => 'El campo :attribute es obligatorio.',
+            'max' => 'El campo :attribute excede el límite permitido.',
         ];
     }
 }
