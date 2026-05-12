@@ -15,7 +15,7 @@
                 @csrf
                 @include('users.form', [
                     'submitLabel' => 'Guardar usuario',
-                    'selectedRole' => old('role'),
+                    'selectedRoles' => old('roles', []),
                     'isCreate' => true,
                 ])
             </form>

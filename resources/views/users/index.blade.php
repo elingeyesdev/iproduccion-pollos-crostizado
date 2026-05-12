@@ -32,7 +32,7 @@
                         <th>#</th>
                         <th>Nombre</th>
                         <th>Correo</th>
-                        <th>Rol</th>
+                        <th>Roles</th>
                         <th class="text-end">Acciones</th>
                     </tr>
                 </thead>

@@ -29,6 +29,11 @@
             </a>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
+            <a href="{{ route('role-assignments.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
+                <i class="fa-solid fa-id-card-clip me-2"></i> Asignación de roles
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
             <a href="{{ route('clientes.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
                 <i class="fa-solid fa-address-book me-2"></i> Clientes
             </a>
@@ -46,6 +51,11 @@
         <div class="col-12 col-md-6 col-lg-4">
             <a href="{{ route('insumos.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
                 <i class="fa-solid fa-boxes-stacked me-2"></i> Insumos
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <a href="{{ route('ingreso-insumos.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
+                <i class="fa-solid fa-truck-ramp-box me-2"></i> Ingresos de insumos
             </a>
         </div>
         <div class="col-12 col-md-6 col-lg-4">

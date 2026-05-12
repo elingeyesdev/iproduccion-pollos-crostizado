@@ -16,7 +16,7 @@
                 @method('PUT')
                 @include('users.form', [
                     'submitLabel' => 'Actualizar usuario',
-                    'selectedRole' => old('role', $user->roles->first()?->name),
+                    'selectedRoles' => old('roles', $user->roles->pluck('name')->toArray()),
                     'isCreate' => false,
                 ])
             </form>

@@ -18,14 +18,7 @@ class UnidadMedidaController extends Controller
     {
         $search = trim((string) $request->input('search'));
 
-        $unidadMedidas = UnidadMedida::query()
-            ->when($search, function ($query) use ($search) {
-                $query->where('nombre', 'like', "%{$search}%")
-                    ->orWhere('abreviatura', 'like', "%{$search}%");
-            })
-            ->orderBy('nombre')
-            ->paginate(10)
-            ->withQueryString();
+        $unidadMedidas = UnidadMedida::searchAndPaginate($search, 10);
 
         return view('unidad-medida.index', compact('unidadMedidas', 'search'));
     }
@@ -45,7 +38,7 @@ class UnidadMedidaController extends Controller
      */
     public function store(UnidadMedidaRequest $request): RedirectResponse
     {
-        UnidadMedida::create($request->validated());
+        UnidadMedida::createFromData($request->validated());
 
         return Redirect::route('unidad-medidas.index')
             ->with('success', 'Unidad de medida creada correctamente.');
@@ -72,7 +65,7 @@ class UnidadMedidaController extends Controller
      */
     public function update(UnidadMedidaRequest $request, UnidadMedida $unidadMedida): RedirectResponse
     {
-        $unidadMedida->update($request->validated());
+        $unidadMedida->updateFromData($request->validated());
 
         return Redirect::route('unidad-medidas.index')
             ->with('success', 'Unidad de medida actualizada correctamente.');
@@ -80,7 +73,7 @@ class UnidadMedidaController extends Controller
 
     public function destroy(UnidadMedida $unidadMedida): RedirectResponse
     {
-        $unidadMedida->delete();
+        $unidadMedida->deleteRecord();
 
         return Redirect::route('unidad-medidas.index')
             ->with('success', 'Unidad de medida eliminada correctamente.');

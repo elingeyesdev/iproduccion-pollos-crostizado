@@ -24,7 +24,8 @@ class UserRequest extends FormRequest
                 'max:180',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
-            'role' => ['required', 'string', 'exists:roles,name'],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['required', 'string', 'exists:roles,name'],
         ];
 
         if ($this->isMethod('POST')) {
@@ -42,7 +43,8 @@ class UserRequest extends FormRequest
             'name' => 'nombre',
             'email' => 'correo electrónico',
             'password' => 'contraseña',
-            'role' => 'rol',
+            'roles' => 'roles',
+            'roles.*' => 'rol',
         ];
     }
 
@@ -56,6 +58,7 @@ class UserRequest extends FormRequest
             'confirmed' => 'La confirmación de :attribute no coincide.',
             'min' => 'El campo :attribute debe tener al menos :min caracteres.',
             'max' => 'El campo :attribute supera el límite permitido.',
+            'array' => 'El campo :attribute debe ser una lista válida.',
         ];
     }
 }

@@ -18,14 +18,7 @@ class ProductoFinalController extends Controller
     {
         $search = trim((string) $request->input('search'));
 
-        $productoFinals = ProductoFinal::query()
-            ->when($search, function ($query) use ($search) {
-                $query->where('nombre', 'like', "%{$search}%")
-                    ->orWhere('descripcion', 'like', "%{$search}%");
-            })
-            ->orderBy('nombre')
-            ->paginate(10)
-            ->withQueryString();
+        $productoFinals = ProductoFinal::searchAndPaginate($search, 10);
 
         return view('producto-final.index', compact('productoFinals', 'search'));
     }
@@ -45,7 +38,7 @@ class ProductoFinalController extends Controller
      */
     public function store(ProductoFinalRequest $request): RedirectResponse
     {
-        ProductoFinal::create($request->validated());
+        ProductoFinal::createFromData($request->validated());
 
         return Redirect::route('producto-finals.index')
             ->with('success', 'Producto final creado correctamente.');
@@ -72,7 +65,7 @@ class ProductoFinalController extends Controller
      */
     public function update(ProductoFinalRequest $request, ProductoFinal $productoFinal): RedirectResponse
     {
-        $productoFinal->update($request->validated());
+        $productoFinal->updateFromData($request->validated());
 
         return Redirect::route('producto-finals.index')
             ->with('success', 'Producto final actualizado correctamente.');
@@ -80,7 +73,7 @@ class ProductoFinalController extends Controller
 
     public function destroy(ProductoFinal $productoFinal): RedirectResponse
     {
-        $productoFinal->delete();
+        $productoFinal->deleteRecord();
 
         return Redirect::route('producto-finals.index')
             ->with('success', 'Producto final eliminado correctamente.');

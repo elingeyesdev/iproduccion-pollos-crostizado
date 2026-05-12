@@ -18,14 +18,7 @@ class RoleController extends Controller
     {
         $search = trim((string) $request->input('search'));
 
-        $roles = Role::query()
-            ->when($search, function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('guard_name', 'like', "%{$search}%");
-            })
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+        $roles = Role::searchAndPaginate($search, 10);
 
         return view('role.index', compact('roles', 'search'));
     }
@@ -45,7 +38,7 @@ class RoleController extends Controller
      */
     public function store(RoleRequest $request): RedirectResponse
     {
-        Role::create($request->validated());
+        Role::createFromData($request->validated());
 
         return Redirect::route('roles.index')
             ->with('success', 'Rol creado correctamente.');
@@ -72,7 +65,7 @@ class RoleController extends Controller
      */
     public function update(RoleRequest $request, Role $role): RedirectResponse
     {
-        $role->update($request->validated());
+        $role->updateFromData($request->validated());
 
         return Redirect::route('roles.index')
             ->with('success', 'Rol actualizado correctamente.');
@@ -80,7 +73,7 @@ class RoleController extends Controller
 
     public function destroy(Role $role): RedirectResponse
     {
-        $role->delete();
+        $role->deleteRecord();
 
         return Redirect::route('roles.index')
             ->with('success', 'Rol eliminado correctamente.');
