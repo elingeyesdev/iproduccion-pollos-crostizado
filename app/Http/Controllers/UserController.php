@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 use App\Http\Requests\UserRequest;
-use App\Models\Role;
 use App\Models\User;
 
 use Illuminate\Http\Request;
@@ -18,14 +17,7 @@ class UserController extends Controller
     {
         $search = trim((string) $request->input('search'));
 
-        $users = User::with('roles')
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-            })
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+        $users = User::searchAndPaginate($search, 10);
 
         return view('users.index', compact('users', 'search'));
     }
@@ -35,7 +27,7 @@ class UserController extends Controller
      */
         public function create(): View
     {
-            $roles = Role::orderBy('name')->get();
+            $roles = User::roleOptions();
             $user = new User();
 
             return view('users.create', compact('roles', 'user'));
@@ -46,13 +38,7 @@ class UserController extends Controller
      */
     public function store(UserRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-        $role = $data['role'];
-        unset($data['role']);
-
-        $user = User::create($data);
-
-        $user->assignRole($role);
+        User::createWithRoles($request->validated());
 
         return redirect()->route('users.index')
             ->with('success', 'Usuario creado correctamente.');
@@ -71,7 +57,7 @@ class UserController extends Controller
      */
         public function edit(User $user): View
     {
-            $roles = Role::orderBy('name')->get();
+            $roles = User::roleOptions();
 
             return view('users.edit', compact('user', 'roles'));
     }
@@ -81,16 +67,7 @@ class UserController extends Controller
      */
     public function update(UserRequest $request, User $user): RedirectResponse
     {
-        $data = $request->validated();
-        $role = $data['role'];
-        unset($data['role']);
-
-        if (empty($data['password'])) {
-            unset($data['password']);
-        }
-
-        $user->update($data);
-        $user->syncRoles([$role]);
+        $user->updateWithRoles($request->validated());
 
         return redirect()->route('users.index')
             ->with('success', 'Usuario actualizado correctamente.');
@@ -101,8 +78,7 @@ class UserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
-        $user->roles()->detach();
-        $user->delete();
+        $user->deleteWithRoles();
 
         return redirect()->route('users.index')
             ->with('success', 'Usuario eliminado correctamente.');

@@ -20,24 +20,7 @@ class InsumoController extends Controller
     {
         $search = trim((string) $request->input('search'));
 
-        $insumos = Insumo::query()
-            ->with([
-                'categoriaInsumo:id,nombre',
-                'unidadMedida:id,nombre,abreviatura',
-            ])
-            ->when($search, function ($query) use ($search) {
-                $query->where('nombre', 'like', "%{$search}%")
-                    ->orWhereHas('categoriaInsumo', function ($relatedQuery) use ($search) {
-                        $relatedQuery->where('nombre', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('unidadMedida', function ($relatedQuery) use ($search) {
-                        $relatedQuery->where('nombre', 'like', "%{$search}%")
-                            ->orWhere('abreviatura', 'like', "%{$search}%");
-                    });
-            })
-            ->orderBy('nombre')
-            ->paginate(10)
-            ->withQueryString();
+        $insumos = Insumo::searchAndPaginate($search, 10);
 
         return view('insumo.index', compact('insumos', 'search'));
     }
@@ -59,7 +42,7 @@ class InsumoController extends Controller
      */
     public function store(InsumoRequest $request): RedirectResponse
     {
-        Insumo::create($request->validated());
+        Insumo::createFromData($request->validated());
 
         return Redirect::route('insumos.index')
             ->with('success', 'Insumo creado correctamente.');
@@ -91,7 +74,7 @@ class InsumoController extends Controller
      */
     public function update(InsumoRequest $request, Insumo $insumo): RedirectResponse
     {
-        $insumo->update($request->validated());
+        $insumo->updateFromData($request->validated());
 
         return Redirect::route('insumos.index')
             ->with('success', 'Insumo actualizado correctamente.');
@@ -99,7 +82,7 @@ class InsumoController extends Controller
 
     public function destroy(Insumo $insumo): RedirectResponse
     {
-        $insumo->delete();
+        $insumo->deleteRecord();
 
         return Redirect::route('insumos.index')
             ->with('success', 'Insumo eliminado correctamente.');

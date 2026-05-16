@@ -18,14 +18,7 @@ class CategoriaInsumoController extends Controller
     {
         $search = trim((string) $request->input('search'));
 
-        $categoriaInsumos = CategoriaInsumo::query()
-            ->when($search, function ($query) use ($search) {
-                $query->where('nombre', 'like', "%{$search}%")
-                    ->orWhere('descripcion', 'like', "%{$search}%");
-            })
-            ->orderBy('nombre')
-            ->paginate(10)
-            ->withQueryString();
+        $categoriaInsumos = CategoriaInsumo::searchAndPaginate($search, 10);
 
         return view('categoria-insumo.index', compact('categoriaInsumos', 'search'));
     }
@@ -45,7 +38,7 @@ class CategoriaInsumoController extends Controller
      */
     public function store(CategoriaInsumoRequest $request): RedirectResponse
     {
-        CategoriaInsumo::create($request->validated());
+        CategoriaInsumo::createFromData($request->validated());
 
         return Redirect::route('categoria-insumos.index')
             ->with('success', 'Categoría creada correctamente.');
@@ -72,7 +65,7 @@ class CategoriaInsumoController extends Controller
      */
     public function update(CategoriaInsumoRequest $request, CategoriaInsumo $categoriaInsumo): RedirectResponse
     {
-        $categoriaInsumo->update($request->validated());
+        $categoriaInsumo->updateFromData($request->validated());
 
         return Redirect::route('categoria-insumos.index')
             ->with('success', 'Categoría actualizada correctamente.');
@@ -80,7 +73,7 @@ class CategoriaInsumoController extends Controller
 
     public function destroy(CategoriaInsumo $categoriaInsumo): RedirectResponse
     {
-        $categoriaInsumo->delete();
+        $categoriaInsumo->deleteRecord();
 
         return Redirect::route('categoria-insumos.index')
             ->with('success', 'Categoría eliminada correctamente.');

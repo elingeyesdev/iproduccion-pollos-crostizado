@@ -42,16 +42,19 @@
 
     <div class="col-md-6">
         <div class="mb-3">
-            <label for="role" class="form-label fw-semibold">Rol</label>
-            <select id="role" name="role" class="form-select @error('role') is-invalid @enderror" required>
-                <option value="">Selecciona un rol</option>
+            <label for="roles" class="form-label fw-semibold">Roles</label>
+            <select id="roles" name="roles[]" class="form-select @error('roles') is-invalid @enderror @error('roles.*') is-invalid @enderror" multiple required>
                 @foreach ($roles as $role)
-                    <option value="{{ $role->name }}" @selected(old('role', $selectedRole) === $role->name)>
+                    <option value="{{ $role->name }}" @selected(in_array($role->name, old('roles', $selectedRoles ?? []), true))>
                         {{ $role->name }}
                     </option>
                 @endforeach
             </select>
-            @error('role')
+            <small class="text-muted">Mantén presionada la tecla Ctrl para seleccionar varios roles.</small>
+            @error('roles')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
+            @error('roles.*')
                 <div class="invalid-feedback d-block">{{ $message }}</div>
             @enderror
         </div>

@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->string('nombre');
-            $table->foreignId('categoria_producto_id')->constrained('categorias_produtos')->onDelete('cascade');
-            $table->string('descripcion');
             $table->double('precio')->default(0);
             $table->integer('estado');
         });
