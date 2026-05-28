@@ -13,6 +13,7 @@ return new class extends Migration
             $table->timestamps();
             $table->date('fecha_ingreso');
             $table->string('descripcion')->nullable();
+            $table->integer('estado')->default(1);
         });
 
         Schema::create('ingreso_insumo_detalle', function (Blueprint $table) {
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->foreignId('insumo_id')->constrained('insumos')->restrictOnDelete();
             $table->decimal('cantidad', 12, 2);
             $table->decimal('precio_unitario', 12, 2);
+            $table->integer('estado')->default(1);
             $table->timestamps();
 
             $table->unique(['ingreso_insumo_id', 'insumo_id']);

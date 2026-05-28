@@ -39,11 +39,6 @@
             </a>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
-            <a href="{{ route('categoria-insumos.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
-                <i class="fa-solid fa-tags me-2"></i> Categorías de insumo
-            </a>
-        </div>
-        <div class="col-12 col-md-6 col-lg-4">
             <a href="{{ route('unidad-medidas.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
                 <i class="fa-solid fa-ruler-combined me-2"></i> Unidades de medida
             </a>
@@ -59,8 +54,28 @@
             </a>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
-            <a href="{{ route('producto-finals.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
-                <i class="fa-solid fa-drumstick-bite me-2"></i> Productos finales
+            <a href="{{ route('productos.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
+                <i class="fa-solid fa-drumstick-bite me-2"></i> Productos
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <a href="{{ route('tipo-productos.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
+                <i class="fa-solid fa-layer-group me-2"></i> Tipo de productos
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <a href="{{ route('orden-producciones.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
+                <i class="fa-solid fa-clipboard-list me-2"></i> Orden de producción
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <a href="{{ route('producciones.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
+                <i class="fa-solid fa-industry me-2"></i> Producción
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <a href="{{ route('ventas.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
+                <i class="fa-solid fa-cash-register me-2"></i> Ventas
             </a>
         </div>
     </div>

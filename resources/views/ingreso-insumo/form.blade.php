@@ -1,21 +1,3 @@
-@php
-    $detalleRows = old('detalles');
-
-    if (!$detalleRows) {
-        $detalleRows = isset($ingreso) && $ingreso->exists
-            ? $ingreso->detalles->map(fn ($detalle) => [
-                'insumo_id' => $detalle->insumo_id,
-                'cantidad' => $detalle->cantidad,
-                'precio_unitario' => $detalle->precio_unitario,
-            ])->toArray()
-            : [[
-                'insumo_id' => '',
-                'cantidad' => '',
-                'precio_unitario' => '',
-            ]];
-    }
-@endphp
-
 <div class="row g-3">
     <div class="col-md-6">
         <label for="fecha_ingreso" class="form-label fw-semibold">Fecha de ingreso</label>
@@ -50,7 +32,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($detalleRows as $index => $detalle)
+                    @foreach (old('detalles', $detalleRows ?? [['insumo_id' => '', 'cantidad' => '', 'precio_unitario' => '']]) as $index => $detalle)
                         <tr>
                             <td style="min-width: 240px;">
                                 <select name="detalles[{{ $index }}][insumo_id]" class="form-select" required>

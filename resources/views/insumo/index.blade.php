@@ -14,7 +14,7 @@
             <form method="GET" action="{{ route('insumos.index') }}" class="row g-2 align-items-end">
                 <div class="col-md-6">
                     <label for="search" class="form-label fw-semibold">Buscar</label>
-                    <input id="search" type="text" name="search" value="{{ $search }}" class="form-control" placeholder="Buscar por insumo, categoría o unidad">
+                    <input id="search" type="text" name="search" value="{{ $search }}" class="form-control" placeholder="Buscar por nombre o unidad">
                 </div>
                 <div class="col-md-6 d-flex gap-2">
                     <button class="btn btn-app-primary" type="submit"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar</button>
@@ -31,10 +31,9 @@
                     <tr>
                         <th>#</th>
                         <th>Nombre</th>
-                        <th>Categoría</th>
                         <th>Unidad</th>
-                        <th>Precio</th>
-                        <th>Stock</th>
+                        <th>Stock actual</th>
+                        <th>Stock mínimo</th>
                         <th>Estado</th>
                         <th class="text-end">Acciones</th>
                     </tr>
@@ -44,10 +43,9 @@
                         <tr>
                             <td>{{ $insumos->firstItem() + $loop->index }}</td>
                             <td class="fw-semibold">{{ $insumo->nombre }}</td>
-                            <td>{{ $insumo->categoriaInsumo?->nombre ?? '-' }}</td>
                             <td>{{ $insumo->unidadMedida?->abreviatura ?? $insumo->unidadMedida?->nombre ?? '-' }}</td>
-                            <td>S/ {{ number_format((float) $insumo->precioUnitario, 2) }}</td>
-                            <td>{{ (int) $insumo->stockActual }} / min {{ (int) $insumo->stockMinimo }}</td>
+                            <td>{{ (int) $insumo->stock_actual }}</td>
+                            <td>{{ (int) $insumo->stock_minimo }}</td>
                             <td>
                                 <span class="badge rounded-pill {{ (int) $insumo->estado === 1 ? 'badge-state' : 'text-bg-secondary' }}">
                                     {{ (int) $insumo->estado === 1 ? 'Activo' : 'Inactivo' }}
@@ -72,7 +70,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="text-center py-4 text-muted">No hay insumos registrados.</td></tr>
+                        <tr><td colspan="7" class="text-center py-4 text-muted">No hay insumos registrados.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -1,18 +1,28 @@
 <?php
 
-use App\Http\Controllers\CategoriaInsumoController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\IngresoInsumoController;
-use App\Http\Controllers\ProductoFinalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserRoleAssignmentController;
 use App\Http\Controllers\UnidadMedidaController;
+use App\Http\Controllers\TipoProductoController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ComponenteProductoController;
+use App\Http\Controllers\DetalleInsumoProductoController;
+use App\Http\Controllers\ProduccionProductoController;
+use App\Http\Controllers\DetalleIngresoBebidaController;
+use App\Http\Controllers\DetalleVentaController;
+use App\Http\Controllers\OrdenProduccionController;
+use App\Http\Controllers\ProduccionController;
+use App\Http\Controllers\IngresoBebidaController;
+use App\Http\Controllers\MermaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\UserRoleController;
+use App\Http\Controllers\RecetaController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -39,15 +49,27 @@ Route::middleware('auth')->group(function () {
     Route::get('/asignacion-roles/create', [UserRoleAssignmentController::class, 'create'])->name('role-assignments.create');
     Route::post('/asignacion-roles', [UserRoleAssignmentController::class, 'store'])->name('role-assignments.store');
     Route::get('/asignacion-roles/{assignment}', [UserRoleAssignmentController::class, 'show'])->name('role-assignments.show');
-    Route::resource('categoria-insumos', CategoriaInsumoController::class);
-    Route::resource('producto-finals', ProductoFinalController::class);
-    Route::resource('categorias', CategoriaInsumoController::class);
     Route::resource('unidad-medidas', UnidadMedidaController::class);
+    Route::resource('tipo-productos', TipoProductoController::class);
+    Route::resource('productos', ProductoController::class);
+    Route::get('componente-productos/composiciones', [ComponenteProductoController::class, 'composiciones'])->name('componente-productos.composiciones');
+    Route::get('componente-productos/composiciones/{producto}/edit', [ComponenteProductoController::class, 'editComposicion'])->name('componente-productos.composiciones.edit');
+    Route::put('componente-productos/composiciones/{producto}', [ComponenteProductoController::class, 'updateComposicion'])->name('componente-productos.composiciones.update');
+    Route::resource('componente-productos', ComponenteProductoController::class);
+    Route::resource('detalle-insumo-productos', DetalleInsumoProductoController::class);
+    Route::resource('produccion-productos', ProduccionProductoController::class);
+    Route::resource('detalle-ingreso-bebidas', DetalleIngresoBebidaController::class);
+    Route::resource('detalle-ventas', DetalleVentaController::class);
+    Route::resource('orden-producciones', OrdenProduccionController::class);
+    Route::resource('producciones', ProduccionController::class);
+    Route::resource('ingreso-bebidas', IngresoBebidaController::class);
+    Route::resource('mermas', MermaController::class);
     Route::resource('roles', RoleController::class);
     Route::resource('insumos', InsumoController::class);
     Route::resource('ingreso-insumos', IngresoInsumoController::class);
     Route::resource('clientes', ClienteController::class);
     Route::resource('ventas', VentaController::class);
+   
 
 
 });

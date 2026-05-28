@@ -9,7 +9,7 @@ class IngresoInsumoDetalle extends Model
 {
     protected $table = 'ingreso_insumo_detalle';
 
-    protected $fillable = ['ingreso_insumo_id', 'insumo_id', 'cantidad', 'precio_unitario'];
+    protected $fillable = ['ingreso_insumo_id', 'insumo_id', 'cantidad', 'precio_unitario', 'estado'];
 
     protected $casts = [
         'cantidad' => 'decimal:2',

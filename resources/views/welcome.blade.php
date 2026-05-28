@@ -138,8 +138,8 @@
                                 <div class="d-flex flex-wrap gap-2">
                                     <a href="{{ route('clientes.index') }}" class="btn btn-sm btn-app-outline">Clientes</a>
                                     <a href="{{ route('insumos.index') }}" class="btn btn-sm btn-app-outline">Insumos</a>
-                                    <a href="{{ route('producto-finals.index') }}" class="btn btn-sm btn-app-outline">Productos</a>
-                                    <a href="{{ route('categoria-insumos.index') }}" class="btn btn-sm btn-app-outline">Categorias</a>
+                                    <a href="{{ route('productos.index') }}" class="btn btn-sm btn-app-outline">Productos</a>
+                                    <a href="{{ route('tipo-productos.index') }}" class="btn btn-sm btn-app-outline">Tipo Productos</a>
                                     <a href="{{ route('unidad-medidas.index') }}" class="btn btn-sm btn-app-outline">Unidades</a>
                                     <a href="{{ route('users.index') }}" class="btn btn-sm btn-app-outline">Usuarios</a>
                                     <a href="{{ route('roles.index') }}" class="btn btn-sm btn-app-outline">Roles</a>

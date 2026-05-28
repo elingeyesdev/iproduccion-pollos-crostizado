@@ -3,63 +3,33 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Class Venta
- *
- * @property $id
- * @property $created_at
- * @property $updated_at
- * @property $cliente_id
- * @property $observaciones
- * @property $total
- * @property $estado
- * @property $opcion_pago
- *
- * @property Cliente $cliente
- * @package App
- * @mixin \Illuminate\Database\Eloquent\Builder
- */
 class Venta extends Model
 {
-    
-    protected $perPage = 20;
+    protected $fillable = ['cliente_id', 'fecha_venta', 'total', 'estado', 'descuento'];
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = ['cliente_id', 'observaciones', 'total', 'estado', 'opcion_pago'];
-
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function cliente()
+    public function cliente(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Cliente::class, 'cliente_id', 'id');
+        return $this->belongsTo(Cliente::class);
     }
 
-    public static function createFromData(array $data): self
+    public function productos(): BelongsToMany
     {
-        return self::create($data);
+        return $this->belongsToMany(Producto::class, 'detalle_ventas')
+            ->withPivot(['precio_unitario', 'cantidad', 'sub_total', 'estado'])
+            ->withTimestamps();
     }
 
-    public static function findByIdOrFail(int|string $id): self
+    public function detalles(): HasMany
     {
-        return self::query()->findOrFail($id);
+        return $this->hasMany(DetalleVenta::class);
     }
 
-    public function updateFromData(array $data): void
+    public function pagos(): HasMany
     {
-        $this->update($data);
+        return $this->hasMany(VentaPago::class);
     }
-
-    public static function deleteById(int|string $id): void
-    {
-        $venta = self::findByIdOrFail($id);
-        $venta->delete();
-    }
-    
 }
