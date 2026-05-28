@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('nombre');
             $table->string('abreviatura');
             $table->double('factor_conversion')->default(1);
-            $table->integer('estado');
-            
+            $table->integer('estado')->default(1);
         });
     }
 

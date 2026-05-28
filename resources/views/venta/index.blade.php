@@ -1,79 +1,79 @@
-@extends('layouts.app')
+@extends('layouts.crud')
 
-@section('template_title')
-    Ventas
-@endsection
+@section('title', 'Ventas')
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+    <x-crud.page-header title="Ventas" subtitle="Listado de ventas realizadas.">
+        <x-slot:actions>
+            <a href="{{ route('ventas.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nueva venta</a>
+        </x-slot:actions>
+    </x-crud.page-header>
 
-                            <span id="card_title">
-                                {{ __('Ventas') }}
-                            </span>
-
-                             <div class="float-right">
-                                <a href="{{ route('ventas.create') }}" class="btn btn-primary btn-sm float-right"  data-placement="left">
-                                  {{ __('Create New') }}
-                                </a>
-                              </div>
-                        </div>
-                    </div>
-                    @if ($message = Session::get('success'))
-                        <div class="alert alert-success m-4">
-                            <p>{{ $message }}</p>
-                        </div>
-                    @endif
-
-                    <div class="card-body bg-white">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead class="thead">
-                                    <tr>
-                                        <th>No</th>
-                                        
-									<th >Cliente Id</th>
-									<th >Observaciones</th>
-									<th >Total</th>
-									<th >Estado</th>
-									<th >Opcion Pago</th>
-
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($ventas as $venta)
-                                        <tr>
-                                            <td>{{ ++$i }}</td>
-                                            
-										<td >{{ $venta->cliente_id }}</td>
-										<td >{{ $venta->observaciones }}</td>
-										<td >{{ $venta->total }}</td>
-										<td >{{ $venta->estado }}</td>
-										<td >{{ $venta->opcion_pago }}</td>
-
-                                            <td>
-                                                <form action="{{ route('ventas.destroy', $venta->id) }}" method="POST">
-                                                    <a class="btn btn-sm btn-primary " href="{{ route('ventas.show', $venta->id) }}"><i class="fa fa-fw fa-eye"></i> {{ __('Show') }}</a>
-                                                    <a class="btn btn-sm btn-success" href="{{ route('ventas.edit', $venta->id) }}"><i class="fa fa-fw fa-edit"></i> {{ __('Edit') }}</a>
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="event.preventDefault(); confirm('Are you sure to delete?') ? this.closest('form').submit() : false;"><i class="fa fa-fw fa-trash"></i> {{ __('Delete') }}</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+    <div class="card card-elevated mb-4 fade-slide">
+        <div class="card-body">
+            <form method="GET" action="{{ route('ventas.index') }}" class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <label for="search" class="form-label fw-semibold">Buscar</label>
+                    <input id="search" type="text" name="search" value="{{ $search ?? '' }}" class="form-control" placeholder="Buscar por cliente o fecha">
                 </div>
-                {!! $ventas->withQueryString()->links() !!}
-            </div>
+                <div class="col-md-6 d-flex gap-2">
+                    <button class="btn btn-app-primary" type="submit"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar</button>
+                    <a href="{{ route('ventas.index') }}" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card card-elevated fade-slide">
+        <div class="card-body table-responsive">
+            <table class="table align-middle table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Método Pago</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($ventas as $venta)
+                        <tr>
+                            <td>{{ $ventas->firstItem() + $loop->index }}</td>
+                            <td>{{ \Carbon\Carbon::parse($venta->fecha_venta)->format('d/m/Y') }}</td>
+                            <td class="fw-semibold">{{ $venta->cliente?->nombre ?? 'N/A' }}</td>
+                            <td>
+                                @forelse($venta->pagos as $pago)
+                                    <span class="badge rounded-pill bg-light text-dark border me-1">
+                                        <i class="fa-solid {{ $pago->metodo_pago === 'QR' ? 'fa-qrcode' : 'fa-money-bill-1-wave' }} me-1 text-danger"></i>
+                                        {{ $pago->metodo_pago }}
+                                    </span>
+                                @empty
+                                    <span class="text-muted">-</span>
+                                @endforelse
+                            </td>
+                            <td class="text-end fw-bold text-success">Bs {{ number_format($venta->total, 2) }}</td>
+                            <td>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ route('ventas.show', $venta) }}" class="btn btn-sm btn-light border"><i class="fa-solid fa-eye me-1"></i> Ver</a>
+                                    <form action="{{ route('ventas.destroy', $venta) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta venta?')">
+                                            <i class="fa-solid fa-trash me-1"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="text-center py-4 text-muted">No se encontraron ventas.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-end">{{ $ventas->links() }}</div>
         </div>
     </div>
 @endsection

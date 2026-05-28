@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->foreignId('cliente_id')->constrained('clientes')->onDelete('cascade');
-            $table->string('observaciones')->nullable();
+            $table->date('fecha_venta');
+            $table->text('observaciones')->nullable();
+            $table->string('opcion_pago')->default('Efectivo');
+            $table->decimal('descuento', 12, 2)->default(0);
             $table->double('total')->default(0);
-            $table->string('estado')->default('pendiente');
-            $table->string('opcion_pago')->default('0');
+            $table->integer('estado')->default(1);
         });
     }
 

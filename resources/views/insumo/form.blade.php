@@ -5,21 +5,6 @@
 
     <div class="col-md-6">
         <div class="mb-3">
-            <label for="categoria_insumo_id" class="form-label fw-semibold">Categoría</label>
-            <select id="categoria_insumo_id" name="categoria_insumo_id" class="form-select @error('categoria_insumo_id') is-invalid @enderror" required>
-                <option value="">Selecciona una categoría</option>
-                @foreach ($categorias as $id => $nombre)
-                    <option value="{{ $id }}" @selected((string) old('categoria_insumo_id', (string) $insumo->categoria_insumo_id) === (string) $id)>{{ $nombre }}</option>
-                @endforeach
-            </select>
-            @error('categoria_insumo_id')
-                <div class="invalid-feedback d-block">{{ $message }}</div>
-            @enderror
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="mb-3">
             <label for="unidad_medida_id" class="form-label fw-semibold">Unidad de medida</label>
             <select id="unidad_medida_id" name="unidad_medida_id" class="form-select @error('unidad_medida_id') is-invalid @enderror" required>
                 <option value="">Selecciona una unidad</option>
@@ -36,15 +21,11 @@
     </div>
 
     <div class="col-md-6">
-        <x-crud.form-input name="precioUnitario" label="Precio unitario" type="number" step="0.01" :value="$insumo->precioUnitario" placeholder="0.00" required />
+        <x-crud.form-input name="stock_actual" label="Stock actual" type="number" :value="$insumo->stock_actual" placeholder="0" required />
     </div>
 
     <div class="col-md-6">
-        <x-crud.form-input name="stockActual" label="Stock actual" type="number" :value="$insumo->stockActual" placeholder="0" required />
-    </div>
-
-    <div class="col-md-6">
-        <x-crud.form-input name="stockMinimo" label="Stock mínimo" type="number" :value="$insumo->stockMinimo" placeholder="0" required />
+        <x-crud.form-input name="stock_minimo" label="Stock mínimo" type="number" :value="$insumo->stock_minimo" placeholder="0" required />
     </div>
 
     <div class="col-md-6">

@@ -11,20 +11,23 @@ class InsumoApiController extends Controller
     public function index()
     {
         return response()->json(
-            Insumo::with(['categoriaInsumo:id,nombre', 'unidadMedida:id,nombre,abreviatura'])->get()
+            Insumo::with(['unidadMedida:id,nombre,abreviatura'])
+                ->where('estado', 1)
+                ->get()
         );
     }
 
     public function store(Request $request)
     {
-        $insumo = Insumo::createFromData($request->all());
+        $insumo = Insumo::create($request->all());
 
         return response()->json($insumo, 201);
     }
 
     public function show(string $id)
     {
-        $insumo = Insumo::with(['categoriaInsumo:id,nombre', 'unidadMedida:id,nombre,abreviatura'])
+        $insumo = Insumo::with(['unidadMedida:id,nombre,abreviatura'])
+            ->where('estado', 1)
             ->findOrFail($id);
 
         return response()->json($insumo);
@@ -32,16 +35,16 @@ class InsumoApiController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $insumo = Insumo::findOrFail($id);
-        $insumo->updateFromData($request->all());
+        $insumo = Insumo::where('estado', 1)->findOrFail($id);
+        $insumo->update($request->all());
 
         return response()->json($insumo);
     }
 
     public function destroy(string $id)
     {
-        $insumo = Insumo::findOrFail($id);
-        $insumo->deleteRecord();
+        $insumo = Insumo::where('estado', 1)->findOrFail($id);
+        $insumo->update(['estado' => 0]);
 
         return response()->json([
             'message' => 'Insumo eliminado',

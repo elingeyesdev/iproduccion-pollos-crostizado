@@ -1,3 +1,54 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+:root {
+	--sidebar-width: 260px;
+	--sidebar-bg: #f8f9fa;
+	--app-bg: #f4f6f9;
+}
+
+body.app-body {
+	margin: 0;
+	background-color: var(--app-bg);
+	font-family: 'Figtree', sans-serif;
+}
+
+.app-wrapper {
+	min-height: 100vh;
+	display: flex;
+}
+
+.app-sidebar {
+	width: var(--sidebar-width);
+	background: var(--sidebar-bg);
+	border-right: 1px solid #dee2e6;
+	position: sticky;
+	top: 0;
+	height: 100vh;
+}
+
+.app-sidebar .nav-link {
+	color: #495057;
+	border-radius: 0.5rem;
+	padding: 0.5rem 0.75rem;
+}
+
+.app-sidebar .nav-link:hover,
+.app-sidebar .nav-link.active {
+	background: #e9ecef;
+	color: #212529;
+}
+
+.app-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.app-content {
+	max-width: 1400px;
+}
+
+@media (max-width: 991.98px) {
+	.app-sidebar {
+		display: none !important;
+	}
+}

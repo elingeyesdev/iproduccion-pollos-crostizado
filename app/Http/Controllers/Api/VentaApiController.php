@@ -10,34 +10,35 @@ class VentaApiController extends Controller
 {
     public function index()
     {
-        return response()->json(Venta::with('cliente')->get());
+        return response()->json(Venta::with('cliente')->where('estado', 1)->get());
     }
 
     public function store(Request $request)
     {
-        $venta = Venta::createFromData($request->all());
+        $venta = Venta::create($request->all());
 
         return response()->json($venta, 201);
     }
 
     public function show(string $id)
     {
-        $venta = Venta::with('cliente')->findOrFail($id);
+        $venta = Venta::with('cliente')->where('estado', 1)->findOrFail($id);
 
         return response()->json($venta);
     }
 
     public function update(Request $request, string $id)
     {
-        $venta = Venta::findByIdOrFail($id);
-        $venta->updateFromData($request->all());
+        $venta = Venta::where('estado', 1)->findOrFail($id);
+        $venta->update($request->all());
 
         return response()->json($venta);
     }
 
     public function destroy(string $id)
     {
-        Venta::deleteById($id);
+        $venta = Venta::where('estado', 1)->findOrFail($id);
+        $venta->update(['estado' => 0]);
 
         return response()->json([
             'message' => 'Venta eliminada',
