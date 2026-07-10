@@ -6,7 +6,7 @@
     <x-crud.page-header title="Detalle de la orden de producción" subtitle="Información de la orden registrada.">
         <x-slot:actions>
             <a href="{{ route('orden-producciones.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
-            <a href="{{ route('orden-producciones.edit', ['orden_produccione' => $ordenProduccion->id]) }}" class="btn btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
+            <a href="{{ route('orden-producciones.edit', $ordenProduccion) }}" class="btn btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
         </x-slot:actions>
     </x-crud.page-header>
 

@@ -3,9 +3,9 @@
 @section('title', 'Producciones')
 
 @section('content')
-    <x-crud.page-header title="Producciones" subtitle="Registro de ejecuciones de producción.">
+    <x-crud.page-header title="Producciones" subtitle="Visualiza y ejecuta producciones registradas.">
         <x-slot:actions>
-            <a href="{{ route('producciones.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nueva producción</a>
+            <a href="{{ route('producciones.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-play me-1"></i> Ejecutar producción</a>
         </x-slot:actions>
     </x-crud.page-header>
 
@@ -31,8 +31,9 @@
                     <tr>
                         <th>#</th>
                         <th>Orden de producción</th>
-                        <th>Insumo Usado</th>
-                        <th>Prod. Obtenido</th>
+                        <th>Detalle de orden</th>
+                        <th class="text-end">Cant. insumo</th>
+                        <th class="text-end">Cant. obtenida</th>
                         <th>Fecha</th>
                         <th class="text-end">Acciones</th>
                     </tr>
@@ -42,29 +43,27 @@
                         <tr>
                             <td>{{ $producciones->firstItem() + $loop->index }}</td>
                             <td class="fw-semibold">{{ $produccion->ordenProduccion?->numero_orden ?? '-' }}</td>
-                            <td>{{ number_format($produccion->cantidad_insumo, 2) }}</td>
-                            <td class="text-success fw-bold">{{ number_format($produccion->cantidad_obtenida, 2) }}</td>
+                            <td>
+                                @php($detalle = $produccion->detalle_orden)
+                                @if($detalle)
+                                    <span class="badge bg-light text-dark border">
+                                        {{ $detalle->insumo?->nombre ?? 'Insumo' }}
+                                    </span>
+                                @else
+                                    <span class="text-muted small">Sin detalle asociado</span>
+                                @endif
+                            </td>
+                            <td class="text-end">{{ number_format((float) $produccion->cantidad_insumo, 2) }}</td>
+                            <td class="text-end">{{ number_format((float) $produccion->cantidad_obtenida, 2) }}</td>
                             <td>{{ $produccion->created_at->format('d/m/Y H:i') }}</td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
                                     <a href="{{ route('producciones.show', $produccion) }}" class="btn btn-sm btn-light border"><i class="fa-solid fa-eye me-1"></i> Ver</a>
-                                    <a href="{{ route('producciones.edit', $produccion) }}" class="btn btn-sm btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
-                                    <form id="delete-form-produccion-{{ $produccion->id }}" action="{{ route('producciones.destroy', $produccion) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProduccionModal{{ $produccion->id }}"><i class="fa-solid fa-trash me-1"></i> Eliminar</button>
-                                    </form>
-                                    <x-crud.delete-modal
-                                        :id="'deleteProduccionModal' . $produccion->id"
-                                        title="Eliminar producción"
-                                        :message="'¿Seguro que deseas eliminar esta producción?'"
-                                        :form-id="'delete-form-produccion-' . $produccion->id"
-                                    />
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-4 text-muted">No hay producciones registradas.</td></tr>
+                        <tr><td colspan="8" class="text-center py-4 text-muted">No hay producciones registradas.</td></tr>
                     @endforelse
                 </tbody>
             </table>

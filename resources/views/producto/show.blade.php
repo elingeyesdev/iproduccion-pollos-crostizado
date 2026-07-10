@@ -6,7 +6,7 @@
     <x-crud.page-header title="Detalle del producto" subtitle="Información del producto registrado.">
         <x-slot:actions>
             <a href="{{ route('productos.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
-            <a href="{{ route('componente-productos.composiciones.edit', $producto) }}" class="btn btn-app-outline"><i class="fa-solid fa-sitemap me-1"></i> Composición</a>
+            <a href="{{ route('producto-composicion.edit', $producto) }}" class="btn btn-app-outline"><i class="fa-solid fa-sitemap me-1"></i> Composición</a>
             <a href="{{ route('productos.edit', $producto) }}" class="btn btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
         </x-slot:actions>
     </x-crud.page-header>
@@ -48,7 +48,6 @@
             <table class="table align-middle">
                 <thead>
                     <tr>
-                        <th>Componente</th>
                         <th>Unidad</th>
                         <th>Cantidad</th>
                     </tr>

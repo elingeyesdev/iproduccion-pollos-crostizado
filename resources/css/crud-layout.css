@@ -204,6 +204,65 @@ body {
     color: #fff;
 }
 
+.btn-regla-primary {
+    background: linear-gradient(135deg, #c1121f, #9b0f18);
+    border: 0;
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    box-shadow: 0 8px 20px rgba(193, 18, 31, 0.25);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.btn-regla-primary:hover,
+.btn-regla-primary:focus {
+    color: #fff;
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(193, 18, 31, 0.3);
+}
+
+.btn-regla-neutral {
+    border: 1px solid #cfd4dc;
+    color: #475569;
+    background-color: #f8fafc;
+    font-weight: 600;
+    transition: all 0.18s ease;
+}
+
+.btn-regla-neutral:hover,
+.btn-regla-neutral:focus {
+    background-color: #eef2f6;
+    color: #334155;
+    border-color: #bfc7d2;
+}
+
+.btn-action-edit {
+    border-color: #0ea5e9;
+    color: #0284c7;
+    background-color: #e0f2fe;
+}
+
+.btn-action-edit:hover,
+.btn-action-edit:focus {
+    color: #fff;
+    background-color: #0284c7;
+    border-color: #0284c7;
+}
+
+.btn-action-delete {
+    border-color: #ef4444;
+    color: #dc2626;
+    background-color: #fee2e2;
+}
+
+.btn-action-delete:hover,
+.btn-action-delete:focus {
+    color: #fff;
+    background-color: #dc2626;
+    border-color: #dc2626;
+}
+
 .table thead th {
     background-color: #f8f9fa;
     border-bottom: 2px solid #dee2e6;

@@ -1,9 +1,9 @@
 @extends('layouts.crud')
 
-@section('title', 'Crear Producción')
+@section('title', 'Ejecutar Producción')
 
 @section('content')
-    <x-crud.page-header title="Crear producción" subtitle="Registra una nueva ejecución de producción.">
+    <x-crud.page-header title="Ejecutar producción" subtitle="Registra la ejecución de un detalle de orden de producción.">
         <x-slot:actions>
             <a href="{{ route('producciones.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
         </x-slot:actions>
@@ -13,7 +13,7 @@
         <div class="card-body">
             <form method="POST" action="{{ route('producciones.store') }}" novalidate>
                 @csrf
-                @include('produccion.form', ['produccionRecord' => $produccion, 'submitLabel' => 'Guardar producción'])
+                @include('produccion.form', ['produccionRecord' => $produccion, 'submitLabel' => 'Ejecutar producción'])
             </form>
         </div>
     </div>

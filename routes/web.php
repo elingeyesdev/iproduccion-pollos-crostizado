@@ -9,7 +9,7 @@ use App\Http\Controllers\UserRoleAssignmentController;
 use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\TipoProductoController;
 use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\ComponenteProductoController;
+use App\Http\Controllers\ProductoComposicionController;
 use App\Http\Controllers\DetalleInsumoProductoController;
 use App\Http\Controllers\ProduccionProductoController;
 use App\Http\Controllers\DetalleIngresoBebidaController;
@@ -23,6 +23,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\RecetaController;
+use App\Http\Controllers\ReglaConversionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -52,16 +53,30 @@ Route::middleware('auth')->group(function () {
     Route::resource('unidad-medidas', UnidadMedidaController::class);
     Route::resource('tipo-productos', TipoProductoController::class);
     Route::resource('productos', ProductoController::class);
-    Route::get('componente-productos/composiciones', [ComponenteProductoController::class, 'composiciones'])->name('componente-productos.composiciones');
-    Route::get('componente-productos/composiciones/{producto}/edit', [ComponenteProductoController::class, 'editComposicion'])->name('componente-productos.composiciones.edit');
-    Route::put('componente-productos/composiciones/{producto}', [ComponenteProductoController::class, 'updateComposicion'])->name('componente-productos.composiciones.update');
-    Route::resource('componente-productos', ComponenteProductoController::class);
+    
+
+    Route::get('composicion-productos', [ProductoComposicionController::class, 'index'])->name('productos-composicion.index');
+    Route::get('composicion-productos/create', [ProductoComposicionController::class, 'create'])->name('productos-composicion.create');
+    Route::post('composicion-productos', [ProductoComposicionController::class, 'store'])->name('productos-composicion.store');
+    Route::get('composicion-productos/{producto}/edit', [ProductoComposicionController::class, 'edit'])->name('productos-composicion.edit');
+    Route::put('composicion-productos/{producto}', [ProductoComposicionController::class, 'update'])->name('productos-composicion.update');
     Route::resource('detalle-insumo-productos', DetalleInsumoProductoController::class);
     Route::resource('produccion-productos', ProduccionProductoController::class);
     Route::resource('detalle-ingreso-bebidas', DetalleIngresoBebidaController::class);
     Route::resource('detalle-ventas', DetalleVentaController::class);
-    Route::resource('orden-producciones', OrdenProduccionController::class);
-    Route::resource('producciones', ProduccionController::class);
+    Route::resource('orden-producciones', OrdenProduccionController::class)
+        ->parameters(['orden-producciones' => 'ordenProduccion']);
+    Route::get('regla-conversiones', [ReglaConversionController::class, 'index'])->name('regla-conversiones.index');
+    Route::get('regla-conversiones/create', [ReglaConversionController::class, 'create'])->name('regla-conversiones.create');
+    Route::post('regla-conversiones', [ReglaConversionController::class, 'store'])->name('regla-conversiones.store');
+    Route::get('regla-conversiones/{reglaConversion}/edit', [ReglaConversionController::class, 'edit'])->name('regla-conversiones.edit');
+    Route::put('regla-conversiones/{reglaConversion}', [ReglaConversionController::class, 'update'])->name('regla-conversiones.update');
+    Route::delete('regla-conversiones/{reglaConversion}', [ReglaConversionController::class, 'destroy'])->name('regla-conversiones.destroy');
+    Route::get('producciones', [ProduccionController::class, 'index'])->name('producciones.index');
+    Route::get('producciones/create', [ProduccionController::class, 'create'])->name('producciones.create');
+    Route::post('producciones', [ProduccionController::class, 'store'])->name('producciones.store');
+    Route::get('producciones/{produccion}', [ProduccionController::class, 'show'])->name('producciones.show');
+   
     Route::resource('ingreso-bebidas', IngresoBebidaController::class);
     Route::resource('mermas', MermaController::class);
     Route::resource('roles', RoleController::class);
@@ -69,9 +84,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('ingreso-insumos', IngresoInsumoController::class);
     Route::resource('clientes', ClienteController::class);
     Route::resource('ventas', VentaController::class);
+
    
-
-
 });
 
 

@@ -59,6 +59,16 @@
             </a>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
+            <a href="{{ route('productos-composicion.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
+                <i class="fa-solid fa-layer-group me-2"></i> Producto-Composición
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <a href="{{ route('regla-conversiones.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
+                <i class="fa-solid fa-calculator me-2"></i> Reglas de conversión
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
             <a href="{{ route('tipo-productos.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
                 <i class="fa-solid fa-layer-group me-2"></i> Tipo de productos
             </a>
@@ -70,9 +80,10 @@
         </div>
         <div class="col-12 col-md-6 col-lg-4">
             <a href="{{ route('producciones.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
-                <i class="fa-solid fa-industry me-2"></i> Producción
+                <i class="fa-solid fa-fire-burner me-2"></i> Producción
             </a>
         </div>
+        
         <div class="col-12 col-md-6 col-lg-4">
             <a href="{{ route('ventas.index') }}" class="btn btn-app-primary w-100 py-3 text-start">
                 <i class="fa-solid fa-cash-register me-2"></i> Ventas

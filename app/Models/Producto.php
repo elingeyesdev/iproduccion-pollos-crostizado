@@ -22,6 +22,24 @@ class Producto extends Model
             ->withTimestamps();
     }
 
+    // Un producto (combo) está compuesto por otros productos
+    public function ingredientes(): BelongsToMany
+    {
+        return $this->belongsToMany(Producto::class, 'composicion_productos', 'producto_padre_id', 'producto_hijo_id')
+            ->withPivot(['cantidad', 'estado'])
+            ->wherePivot('estado', 1)
+            ->withTimestamps();
+    }
+
+    // Un producto puede ser parte de varios combos
+    public function esParteDe(): BelongsToMany
+    {
+        return $this->belongsToMany(Producto::class, 'composicion_productos', 'producto_hijo_id', 'producto_padre_id')
+            ->withPivot(['cantidad', 'estado'])
+            ->wherePivot('estado', 1)
+            ->withTimestamps();
+    }
+
     public function producciones(): BelongsToMany
     {
         return $this->belongsToMany(Produccion::class, 'produccion_producto')

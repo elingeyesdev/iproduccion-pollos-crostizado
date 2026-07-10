@@ -69,7 +69,7 @@ class OrdenProduccionController extends Controller
 
     public function show(OrdenProduccion $ordenProduccion): View
     {
-        $ordenProduccion->loadMissing(['insumos.insumo.unidadMedida', 'producciones']);
+        $ordenProduccion->loadMissing(['insumos.insumo.unidadMedida']);
 
         return view('orden-produccion.show', compact('ordenProduccion'));
     }

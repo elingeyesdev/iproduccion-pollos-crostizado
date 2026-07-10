@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class OrdenProduccionInsumo extends Model
 {
@@ -23,5 +24,10 @@ class OrdenProduccionInsumo extends Model
     public function insumo(): BelongsTo
     {
         return $this->belongsTo(Insumo::class);
+    }
+
+    public function produccion(): HasOne
+    {
+        return $this->hasOne(Produccion::class);
     }
 }

@@ -29,7 +29,12 @@
     <!-- Sección de Carrito -->
     <div class="cart-section">
         <div class="mb-3">
-            <label for="cliente_id" class="form-label fw-bold">Cliente</label>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <label for="cliente_id" class="form-label fw-bold mb-0">Cliente</label>
+                <a href="{{ route('clientes.create') }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-solid fa-user-plus me-1"></i> Crear cliente nuevo
+                </a>
+            </div>
             <select name="cliente_id" id="cliente_id" class="form-select @error('cliente_id') is-invalid @enderror" required>
                 <option value="">Seleccionar cliente...</option>
                 @foreach($clientes as $cliente)
