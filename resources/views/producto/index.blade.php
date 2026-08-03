@@ -43,7 +43,7 @@
                         <tr>
                             <td>{{ $productos->firstItem() + $loop->index }}</td>
                             <td class="fw-semibold">{{ $producto->nombre }}</td>
-                            <td>S/ {{ number_format((float) $producto->precio, 2) }}</td>
+                            <td>Bs {{ number_format((float) $producto->precio, 2) }}</td>
                             <td>{{ $producto->tipoProducto?->nombre ?? '-' }}</td>
                             <td>{{ (int) $producto->cantidad_actual }}</td>
                             <td>

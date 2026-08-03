@@ -44,8 +44,8 @@
                             <td>{{ $insumos->firstItem() + $loop->index }}</td>
                             <td class="fw-semibold">{{ $insumo->nombre }}</td>
                             <td>{{ $insumo->unidadMedida?->abreviatura ?? $insumo->unidadMedida?->nombre ?? '-' }}</td>
-                            <td>{{ (int) $insumo->stock_actual }}</td>
-                            <td>{{ (int) $insumo->stock_minimo }}</td>
+                            <td>{{ number_format((float) $insumo->stock_actual, 2) }}</td>
+                            <td>{{ number_format((float) $insumo->stock_minimo, 2) }}</td>
                             <td>
                                 <span class="badge rounded-pill {{ (int) $insumo->estado === 1 ? 'badge-state' : 'text-bg-secondary' }}">
                                     {{ (int) $insumo->estado === 1 ? 'Activo' : 'Inactivo' }}

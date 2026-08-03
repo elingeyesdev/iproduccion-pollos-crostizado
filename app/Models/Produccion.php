@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
@@ -18,6 +17,7 @@ class Produccion extends Model
         'orden_produccion_insumo_id',
         'regla_conversion_id',
         'receta_id',
+        'producto_id',
         'cantidad_insumo',
         'cantidad_obtenida',
         'nivel',
@@ -44,18 +44,9 @@ class Produccion extends Model
         return $this->belongsTo(ReglaConversion::class, 'regla_conversion_id');
     }
 
-    public function insumos(): BelongsToMany
+    public function producto(): BelongsTo
     {
-        return $this->belongsToMany(Insumo::class, 'produccion_insumo')
-            ->withPivot(['cantidad', 'estado'])
-            ->withTimestamps();
-    }
-
-    public function productos(): BelongsToMany
-    {
-        return $this->belongsToMany(Producto::class, 'produccion_producto')
-            ->withPivot(['cantidad_producida', 'estado'])
-            ->withTimestamps();
+        return $this->belongsTo(Producto::class);
     }
 
     public function mermas(): HasMany
@@ -71,6 +62,7 @@ class Produccion extends Model
             'reglaConversion.unidadEntrada',
             'reglaConversion.unidadSalida',
             'reglaConversion.producto',
+            'producto',
             'ordenProduccion.insumos.insumo.unidadMedida',
             'ordenProduccionInsumo.insumo.unidadMedida',
         ]);

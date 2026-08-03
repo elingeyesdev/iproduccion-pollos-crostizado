@@ -40,13 +40,6 @@ class Producto extends Model
             ->withTimestamps();
     }
 
-    public function producciones(): BelongsToMany
-    {
-        return $this->belongsToMany(Produccion::class, 'produccion_producto')
-            ->withPivot(['cantidad_producida', 'estado'])
-            ->withTimestamps();
-    }
-
     public function ventas(): BelongsToMany
     {
         return $this->belongsToMany(Venta::class, 'detalle_ventas')

@@ -6,12 +6,18 @@
             @foreach ($producciones as $produccion)
                 <option value="{{ $produccion->id }}" @selected((string) old('produccion_id', $merma->produccion_id) === (string) $produccion->id)>
                     {{ $produccion->ordenProduccion?->numero_orden ?? ('Producción #' . $produccion->id) }}
+                    @if ($produccion->producto_afectado)
+                        &rarr; {{ $produccion->producto_afectado->nombre }} (stock: {{ number_format((float) $produccion->producto_afectado->cantidad_actual, 2) }})
+                    @else
+                        &rarr; producto no determinado
+                    @endif
                 </option>
             @endforeach
         </select>
         @error('produccion_id')
             <div class="invalid-feedback d-block">{{ $message }}</div>
         @enderror
+        <small class="text-muted">La cantidad de merma se descuenta del producto resultante de la producción seleccionada.</small>
     </div>
 
     <div class="col-md-6">

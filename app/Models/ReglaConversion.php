@@ -60,4 +60,19 @@ class ReglaConversion extends Model
     {
         return $this->hasMany(Produccion::class, 'regla_conversion_id');
     }
+
+    public function resolverProducto(): ?Producto
+    {
+        if ($this->producto) {
+            return $this->producto;
+        }
+
+        $nombreProducto = trim((string) ($this->producto_resultante ?? ''));
+
+        if ($nombreProducto === '') {
+            return null;
+        }
+
+        return Producto::whereRaw('LOWER(TRIM(nombre)) = ?', [mb_strtolower($nombreProducto)])->first();
+    }
 }

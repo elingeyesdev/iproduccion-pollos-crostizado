@@ -6,6 +6,9 @@
     <x-crud.page-header title="Detalle de la orden de producción" subtitle="Información de la orden registrada.">
         <x-slot:actions>
             <a href="{{ route('orden-producciones.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
+            @if ((int) ($ordenProduccion->insumos_pendientes_count ?? 0) > 0)
+                <a href="{{ route('producciones.lote.create', $ordenProduccion) }}" class="btn btn-app-primary"><i class="fa-solid fa-play me-1"></i> Ejecutar producción</a>
+            @endif
             <a href="{{ route('orden-producciones.edit', $ordenProduccion) }}" class="btn btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
         </x-slot:actions>
     </x-crud.page-header>
@@ -28,6 +31,15 @@
 
                 <dt class="col-sm-3">Insumos planificados</dt>
                 <dd class="col-sm-9">{{ $ordenProduccion->insumos->count() }} insumos</dd>
+
+                <dt class="col-sm-3">Estado de producción</dt>
+                <dd class="col-sm-9">
+                    @if ((int) ($ordenProduccion->insumos_pendientes_count ?? 0) > 0)
+                        <span class="badge bg-warning text-dark">Pendiente de ejecutar</span>
+                    @else
+                        <span class="badge bg-success">Producción ejecutada</span>
+                    @endif
+                </dd>
             </dl>
         </div>
     </div>

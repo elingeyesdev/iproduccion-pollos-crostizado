@@ -35,8 +35,8 @@
                         <tr>
                             <td>{{ $detalle->insumo?->nombre ?? '-' }}</td>
                             <td>{{ $detalle->cantidad }}</td>
-                            <td>S/ {{ number_format((float) $detalle->precio_unitario, 2) }}</td>
-                            <td>S/ {{ number_format((float) ($detalle->cantidad * $detalle->precio_unitario), 2) }}</td>
+                            <td>Bs {{ number_format((float) $detalle->precio_unitario, 2) }}</td>
+                            <td>Bs {{ number_format((float) ($detalle->cantidad * $detalle->precio_unitario), 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -55,7 +55,7 @@
                             <td class="fw-semibold">{{ $producto->nombre }}</td>
                             <td>{{ $producto->tipoProducto?->nombre ?? '-' }}</td>
                             <td>{{ number_format((float) $producto->pivot->cantidad_ingresa, 2) }}</td>
-                            <td>S/ {{ number_format((float) $producto->pivot->precio, 2) }}</td>
+                            <td>Bs {{ number_format((float) $producto->pivot->precio, 2) }}</td>
                             <td>{{ (int) $producto->cantidad_actual }}</td>
                         </tr>
                     @empty

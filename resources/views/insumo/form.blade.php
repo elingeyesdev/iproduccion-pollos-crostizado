@@ -21,11 +21,11 @@
     </div>
 
     <div class="col-md-6">
-        <x-crud.form-input name="stock_actual" label="Stock actual" type="number" :value="$insumo->stock_actual" placeholder="0" required />
+        <x-crud.form-input name="stock_actual" label="Stock actual" type="number" step="0.01" :value="$insumo->stock_actual" placeholder="0" required />
     </div>
 
     <div class="col-md-6">
-        <x-crud.form-input name="stock_minimo" label="Stock mínimo" type="number" :value="$insumo->stock_minimo" placeholder="0" required />
+        <x-crud.form-input name="stock_minimo" label="Stock mínimo" type="number" step="0.01" :value="$insumo->stock_minimo" placeholder="0" required />
     </div>
 
     <div class="col-md-6">

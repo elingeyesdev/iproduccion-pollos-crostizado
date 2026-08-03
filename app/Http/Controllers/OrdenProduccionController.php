@@ -19,6 +19,9 @@ class OrdenProduccionController extends Controller
         $search = trim((string) $request->input('search'));
         $ordenProducciones = OrdenProduccion::query()
             ->withCount('insumos')
+            ->withCount(['insumos as insumos_pendientes_count' => function ($query) {
+                $query->where('estado', 1)->whereDoesntHave('produccion');
+            }])
             ->when($search, function ($query) use ($search) {
                 $query->where('numero_orden', 'like', "%{$search}%")
                     ->orWhere('fecha_programada', 'like', "%{$search}%");
@@ -70,6 +73,9 @@ class OrdenProduccionController extends Controller
     public function show(OrdenProduccion $ordenProduccion): View
     {
         $ordenProduccion->loadMissing(['insumos.insumo.unidadMedida']);
+        $ordenProduccion->loadCount(['insumos as insumos_pendientes_count' => function ($query) {
+            $query->where('estado', 1)->whereDoesntHave('produccion');
+        }]);
 
         return view('orden-produccion.show', compact('ordenProduccion'));
     }

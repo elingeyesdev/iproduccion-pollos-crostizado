@@ -18,7 +18,7 @@
                 <dd class="col-sm-9">{{ $producto->nombre }}</dd>
 
                 <dt class="col-sm-3">Precio</dt>
-                <dd class="col-sm-9">S/ {{ number_format((float) $producto->precio, 2) }}</dd>
+                <dd class="col-sm-9">Bs {{ number_format((float) $producto->precio, 2) }}</dd>
 
                 <dt class="col-sm-3">Tipo de producto</dt>
                 <dd class="col-sm-9">{{ $producto->tipoProducto?->nombre ?? '-' }}</dd>

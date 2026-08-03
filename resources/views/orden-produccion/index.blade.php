@@ -34,6 +34,7 @@
                         <th>Fecha programada</th>
                         <th>Insumos planificados</th>
                         <th>Estado</th>
+                        <th>Producción</th>
                         <th class="text-end">Acciones</th>
                     </tr>
                 </thead>
@@ -50,7 +51,17 @@
                                 </span>
                             </td>
                             <td>
+                                @if ((int) ($ordenProduccion->insumos_pendientes_count ?? 0) > 0)
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                @else
+                                    <span class="badge bg-success">Ejecutada</span>
+                                @endif
+                            </td>
+                            <td>
                                 <div class="d-flex justify-content-end gap-2">
+                                    @if ((int) ($ordenProduccion->insumos_pendientes_count ?? 0) > 0)
+                                        <a href="{{ route('producciones.lote.create', $ordenProduccion) }}" class="btn btn-sm btn-app-primary"><i class="fa-solid fa-play me-1"></i> Ejecutar</a>
+                                    @endif
                                     <a href="{{ route('orden-producciones.show', $ordenProduccion) }}" class="btn btn-sm btn-light border"><i class="fa-solid fa-eye me-1"></i> Ver</a>
                                     <a href="{{ route('orden-producciones.edit', $ordenProduccion) }}" class="btn btn-sm btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
                                     <form id="delete-form-orden-produccion-{{ $ordenProduccion->id }}" action="{{ route('orden-producciones.destroy', $ordenProduccion) }}" method="POST">
@@ -68,7 +79,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-4 text-muted">No hay órdenes registradas.</td></tr>
+                        <tr><td colspan="7" class="text-center py-4 text-muted">No hay órdenes registradas.</td></tr>
                     @endforelse
                 </tbody>
             </table>

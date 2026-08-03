@@ -15,7 +15,7 @@
             <div class="row g-3">
                 <div class="col-md-6"><div class="border rounded-3 p-3 h-100"><small class="text-muted d-block">Nombre</small><strong class="fs-5">{{ $insumo->nombre }}</strong></div></div>
                 <div class="col-md-6"><div class="border rounded-3 p-3 h-100"><small class="text-muted d-block">Unidad de medida</small><strong class="fs-5">{{ $insumo->unidadMedida?->nombre ?? '-' }}</strong></div></div>
-                <div class="col-md-6"><div class="border rounded-3 p-3 h-100"><small class="text-muted d-block">Precio unitario</small><strong class="fs-5">S/ {{ number_format((float) $insumo->precioUnitario, 2) }}</strong></div></div>
+                <div class="col-md-6"><div class="border rounded-3 p-3 h-100"><small class="text-muted d-block">Precio unitario</small><strong class="fs-5">Bs {{ number_format((float) $insumo->precioUnitario, 2) }}</strong></div></div>
                 <div class="col-md-6"><div class="border rounded-3 p-3 h-100"><small class="text-muted d-block">Stock actual</small><strong class="fs-5">{{ (int) $insumo->stockActual }}</strong></div></div>
                 <div class="col-md-6"><div class="border rounded-3 p-3 h-100"><small class="text-muted d-block">Stock mínimo</small><strong class="fs-5">{{ (int) $insumo->stockMinimo }}</strong></div></div>
             </div>

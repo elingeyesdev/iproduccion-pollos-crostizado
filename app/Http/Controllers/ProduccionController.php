@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Insumo;
+use App\Models\OrdenProduccion;
 use App\Models\OrdenProduccionInsumo;
 use App\Models\Produccion;
 use App\Models\Producto;
@@ -117,8 +118,10 @@ class ProduccionController extends Controller
             $cantidadObtenida = $minObtenida;
         }
 
+        $producto = $regla->resolverProducto();
+
         try {
-            DB::transaction(function () use ($detalle, $regla, $cantidadObtenida) {
+            DB::transaction(function () use ($detalle, $regla, $producto, $cantidadObtenida) {
                 $raizPayload = [
                     'orden_produccion_id' => $detalle->orden_produccion_id,
                     'orden_produccion_insumo_id' => $detalle->id,
@@ -131,14 +134,18 @@ class ProduccionController extends Controller
                     $raizPayload['regla_conversion_id'] = $regla->id;
                 }
 
+                if ($this->produccionTieneColumna('producto_id')) {
+                    $raizPayload['producto_id'] = $producto?->id;
+                }
+
                 if ($this->produccionTieneColumna('nivel')) {
                     $raizPayload['nivel'] = 0;
                 }
 
-                $raiz = Produccion::create($raizPayload);
+                Produccion::create($raizPayload);
 
-                $this->descontarStockInsumo($raiz, $detalle);
-                $this->registrarSalidaProducto($raiz, $regla, $cantidadObtenida);
+                $this->descontarStockInsumo($detalle);
+                $this->registrarSalidaProducto($producto, $cantidadObtenida);
             });
         } catch (\RuntimeException $e) {
             return Redirect::back()
@@ -148,6 +155,128 @@ class ProduccionController extends Controller
 
         return Redirect::route('producciones.index')
             ->with('success', 'Producción ejecutada correctamente.');
+    }
+
+    public function loteCreate(OrdenProduccion $ordenProduccion): View
+    {
+        $detalles = OrdenProduccionInsumo::query()
+            ->where('orden_produccion_id', $ordenProduccion->id)
+            ->where('estado', 1)
+            ->whereDoesntHave('produccion')
+            ->with('insumo.unidadMedida')
+            ->orderBy('id')
+            ->get()
+            ->map(function (OrdenProduccionInsumo $detalle) {
+                $regla = $this->autoMatchRegla($detalle);
+                $producto = $regla ? $regla->resolverProducto() : null;
+
+                return [
+                    'detalle' => $detalle,
+                    'regla' => $regla,
+                    'producto' => $producto,
+                ];
+            });
+
+        $productoIds = $detalles->pluck('producto.id')->filter()->unique();
+
+        $loteEjecutable = $detalles->isNotEmpty()
+            && $detalles->every(fn (array $linea) => $linea['regla'] && $linea['producto'])
+            && $productoIds->count() === 1;
+
+        return view('produccion.lote-create', compact('ordenProduccion', 'detalles', 'loteEjecutable'));
+    }
+
+    public function loteStore(Request $request, OrdenProduccion $ordenProduccion): RedirectResponse
+    {
+        $data = $request->validate([
+            'cantidad_obtenida' => 'required|numeric|min:0.01',
+        ]);
+
+        $cantidadObtenida = (float) $data['cantidad_obtenida'];
+
+        $detalles = OrdenProduccionInsumo::query()
+            ->where('orden_produccion_id', $ordenProduccion->id)
+            ->where('estado', 1)
+            ->whereDoesntHave('produccion')
+            ->with('insumo')
+            ->orderBy('id')
+            ->get();
+
+        if ($detalles->isEmpty()) {
+            return Redirect::back()
+                ->withErrors(['cantidad_obtenida' => 'Esta orden no tiene insumos pendientes de producción.']);
+        }
+
+        $lineas = [];
+        $productoIds = [];
+
+        foreach ($detalles as $detalle) {
+            $regla = $this->autoMatchRegla($detalle);
+
+            if (!$regla) {
+                return Redirect::back()
+                    ->withInput()
+                    ->withErrors(['cantidad_obtenida' => "No hay una regla de conversión activa para el insumo \"{$detalle->insumo?->nombre}\"."]);
+            }
+
+            $producto = $regla->resolverProducto();
+
+            if (!$producto) {
+                return Redirect::back()
+                    ->withInput()
+                    ->withErrors(['cantidad_obtenida' => "No se pudo determinar el producto resultante para el insumo \"{$detalle->insumo?->nombre}\"."]);
+            }
+
+            $lineas[] = ['detalle' => $detalle, 'regla' => $regla, 'producto' => $producto];
+            $productoIds[$producto->id] = true;
+        }
+
+        if (count($productoIds) > 1) {
+            return Redirect::back()
+                ->withInput()
+                ->withErrors(['cantidad_obtenida' => 'Las líneas de esta orden generan productos distintos; no se puede ejecutar como un solo lote.']);
+        }
+
+        $productoFinal = $lineas[0]['producto'];
+
+        try {
+            DB::transaction(function () use ($lineas, $cantidadObtenida, $ordenProduccion, $productoFinal) {
+                foreach ($lineas as $linea) {
+                    $raizPayload = [
+                        'orden_produccion_id' => $ordenProduccion->id,
+                        'orden_produccion_insumo_id' => $linea['detalle']->id,
+                        'cantidad_insumo' => (float) $linea['detalle']->cantidad,
+                        'cantidad_obtenida' => $cantidadObtenida,
+                        'estado' => 1,
+                    ];
+
+                    if ($this->produccionTieneColumna('regla_conversion_id')) {
+                        $raizPayload['regla_conversion_id'] = $linea['regla']->id;
+                    }
+
+                    if ($this->produccionTieneColumna('producto_id')) {
+                        $raizPayload['producto_id'] = $linea['producto']->id;
+                    }
+
+                    if ($this->produccionTieneColumna('nivel')) {
+                        $raizPayload['nivel'] = 0;
+                    }
+
+                    Produccion::create($raizPayload);
+
+                    $this->descontarStockInsumo($linea['detalle']);
+                }
+
+                Producto::whereKey($productoFinal->id)->increment('cantidad_actual', (int) round($cantidadObtenida));
+            });
+        } catch (\RuntimeException $e) {
+            return Redirect::back()
+                ->withInput()
+                ->withErrors(['cantidad_obtenida' => $e->getMessage()]);
+        }
+
+        return Redirect::route('orden-producciones.show', $ordenProduccion)
+            ->with('success', 'Producción del lote ejecutada correctamente. Se descontaron ' . count($lineas) . ' insumo(s) y se generaron ' . number_format($cantidadObtenida, 2) . ' unidades de ' . $productoFinal->nombre . '.');
     }
 
     public function index(Request $request): View
@@ -176,10 +305,9 @@ class ProduccionController extends Controller
             'reglaConversion.unidadEntrada',
             'reglaConversion.unidadSalida',
             'reglaConversion.producto',
+            'producto',
             'ordenProduccion.insumos.insumo.unidadMedida',
             'ordenProduccionInsumo.insumo.unidadMedida',
-            'insumos.unidadMedida',
-            'productos.tipoProducto',
             'mermas',
         ];
 
@@ -201,44 +329,38 @@ class ProduccionController extends Controller
         return [round($min, 2), round($max, 2)];
     }
 
-    private function descontarStockInsumo(Produccion $produccion, OrdenProduccionInsumo $detalle): void
+    private function descontarStockInsumo(OrdenProduccionInsumo $detalle): void
     {
         $insumo = Insumo::whereKey($detalle->insumo_id)->lockForUpdate()->firstOrFail();
 
-        $cantidadConsumida = (int) round((float) $detalle->cantidad);
+        $cantidadConsumida = round((float) $detalle->cantidad, 2);
 
-        if ((int) $insumo->stock_actual < $cantidadConsumida) {
+        if ((float) $insumo->stock_actual < $cantidadConsumida) {
             throw new \RuntimeException(
                 "Stock insuficiente para el insumo \"{$insumo->nombre}\". Disponible: {$insumo->stock_actual}, requerido: {$cantidadConsumida}."
             );
         }
 
         $insumo->decrement('stock_actual', $cantidadConsumida);
-
-        $produccion->insumos()->syncWithoutDetaching([
-            $insumo->id => [
-                'cantidad' => $cantidadConsumida,
-                'estado' => 1,
-            ],
-        ]);
     }
 
-    private function registrarSalidaProducto(Produccion $produccion, ReglaConversion $regla, float $cantidadObtenida): void
+    private function registrarSalidaProducto(?Producto $producto, float $cantidadObtenida): void
     {
-        if (!$regla->producto_id) {
+        if (!$producto) {
             return;
         }
 
         Producto::query()
-            ->whereKey($regla->producto_id)
+            ->whereKey($producto->id)
             ->increment('cantidad_actual', (int) round($cantidadObtenida));
+    }
 
-        $produccion->productos()->syncWithoutDetaching([
-            $regla->producto_id => [
-                'cantidad_producida' => round($cantidadObtenida, 2),
-                'estado' => 1,
-            ],
-        ]);
+    private function autoMatchRegla(OrdenProduccionInsumo $detalle): ?ReglaConversion
+    {
+        return ReglaConversion::with(['insumo', 'producto'])
+            ->where('estado', 1)
+            ->get()
+            ->first(fn (ReglaConversion $regla) => $this->reglaCoincideConDetalle($regla, $detalle));
     }
 
     private function reglaTieneColumna(string $columna): bool

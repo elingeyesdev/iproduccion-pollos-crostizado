@@ -24,6 +24,7 @@ use App\Http\Controllers\VentaController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\RecetaController;
 use App\Http\Controllers\ReglaConversionController;
+use App\Http\Controllers\ReporteController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -75,8 +76,16 @@ Route::middleware('auth')->group(function () {
     Route::get('producciones', [ProduccionController::class, 'index'])->name('producciones.index');
     Route::get('producciones/create', [ProduccionController::class, 'create'])->name('producciones.create');
     Route::post('producciones', [ProduccionController::class, 'store'])->name('producciones.store');
+    Route::get('producciones/lote/{ordenProduccion}', [ProduccionController::class, 'loteCreate'])->name('producciones.lote.create');
+    Route::post('producciones/lote/{ordenProduccion}', [ProduccionController::class, 'loteStore'])->name('producciones.lote.store');
     Route::get('producciones/{produccion}', [ProduccionController::class, 'show'])->name('producciones.show');
-   
+
+    Route::get('reportes/insumos', [ReporteController::class, 'insumos'])->name('reportes.insumos');
+    Route::get('reportes/productos', [ReporteController::class, 'productos'])->name('reportes.productos');
+    Route::get('reportes/ventas-mensual', [ReporteController::class, 'ventasMensual'])->name('reportes.ventas-mensual');
+    Route::get('reportes/produccion-mensual', [ReporteController::class, 'produccionMensual'])->name('reportes.produccion-mensual');
+    Route::get('reportes/stock', [ReporteController::class, 'stock'])->name('reportes.stock');
+
     Route::resource('ingreso-bebidas', IngresoBebidaController::class);
     Route::resource('mermas', MermaController::class);
     Route::resource('roles', RoleController::class);

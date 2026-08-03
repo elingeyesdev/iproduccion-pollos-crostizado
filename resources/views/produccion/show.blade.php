@@ -26,21 +26,21 @@
                     @if($produccion->reglaConversion)
                         {{ $produccion->reglaConversion->insumo?->nombre ?? 'Insumo' }}
                         ->
-                        {{ $produccion->reglaConversion->producto?->nombre ?? ($produccion->reglaConversion->producto_resultante ?? 'Resultado') }}
+                        {{ $produccion->producto?->nombre ?? $produccion->reglaConversion->producto_resultante ?? 'Resultado' }}
                         ({{ $produccion->reglaConversion->tipo_conversion }})
                     @else
                         -
                     @endif
                 </dd>
 
+                <dt class="col-sm-3">Producto obtenido</dt>
+                <dd class="col-sm-9">{{ $produccion->producto?->nombre ?? '-' }}</dd>
+
                 <dt class="col-sm-3">Cantidad de insumo</dt>
                 <dd class="col-sm-9">{{ number_format((float) $produccion->cantidad_insumo, 2) }}</dd>
 
                 <dt class="col-sm-3">Cantidad obtenida</dt>
                 <dd class="col-sm-9">{{ number_format((float) $produccion->cantidad_obtenida, 2) }}</dd>
-
-                <dt class="col-sm-3">Insumos relacionados</dt>
-                <dd class="col-sm-9">{{ $produccion->insumos->count() }}</dd>
 
                 <dt class="col-sm-3">Mermas registradas</dt>
                 <dd class="col-sm-9">{{ $produccion->mermas->count() }}</dd>
@@ -50,9 +50,6 @@
 
                 <dt class="col-sm-3">Nivel recursivo</dt>
                 <dd class="col-sm-9">{{ (int) ($produccion->nivel ?? 0) }}</dd>
-
-                <dt class="col-sm-3">Producciones hijas</dt>
-                <dd class="col-sm-9">{{ $produccion->hijas->count() }}</dd>
             </dl>
         </div>
     </div>
