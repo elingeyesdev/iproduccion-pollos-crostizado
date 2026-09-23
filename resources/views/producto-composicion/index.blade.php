@@ -6,7 +6,7 @@
     <x-crud.page-header title="Armado de Combos" subtitle="Gestiona la composición de platos que contienen otros productos.">
         <x-slot:actions>
             <a href="{{ route('productos-composicion.create') }}" class="btn btn-app-primary">
-                <i class="fa-solid fa-plus me-1"></i> Crear
+                <i class="fa-solid fa-plus me-1"></i> Crear Combo
             </a>
         </x-slot:actions>
     </x-crud.page-header>

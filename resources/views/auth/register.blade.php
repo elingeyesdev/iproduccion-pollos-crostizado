@@ -26,6 +26,9 @@
         <div>
             <label for="password" class="form-label fw-semibold">Contraseña</label>
             <input id="password" type="password" name="password" class="form-control @error('password') is-invalid @enderror" required autocomplete="new-password">
+            <div id="password-strength" class="small mt-2" aria-live="polite">
+                <span class="fw-semibold text-danger">Insegura</span>
+            </div>
             @error('password')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -34,6 +37,7 @@
         <div>
             <label for="password_confirmation" class="form-label fw-semibold">Confirmar contraseña</label>
             <input id="password_confirmation" type="password" name="password_confirmation" class="form-control @error('password_confirmation') is-invalid @enderror" required autocomplete="new-password">
+            <div id="password-match" class="small mt-2" aria-live="polite"></div>
             @error('password_confirmation')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -49,4 +53,55 @@
             </button>
         </div>
     </form>
+
+    <script>
+        (() => {
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const confirmationInput = document.getElementById('password_confirmation');
+            const strength = document.getElementById('password-strength');
+            const strengthLabel = strength.querySelector('span');
+            const matchLabel = document.getElementById('password-match');
+
+            const updatePasswordStatus = () => {
+                const password = passwordInput.value;
+                const normalizedPassword = password.trim().toLowerCase();
+                const normalizedName = nameInput.value.trim().toLowerCase();
+                const normalizedEmail = emailInput.value.trim().toLowerCase();
+                const rules = {
+                    length: password.length >= 8,
+                    uppercase: /[A-Z]/.test(password),
+                    lowercase: /[a-z]/.test(password),
+                    number: /\d/.test(password),
+                    identity: normalizedPassword !== normalizedName && normalizedPassword !== normalizedEmail,
+                };
+                const isSecure = Object.values(rules).every(Boolean);
+
+                strengthLabel.textContent = isSecure ? 'Segura' : 'Insegura';
+                strengthLabel.classList.toggle('text-success', isSecure);
+                strengthLabel.classList.toggle('text-danger', !isSecure);
+
+                confirmationInput.classList.toggle(
+                    'is-invalid',
+                    confirmationInput.value.length > 0 && password !== confirmationInput.value,
+                );
+
+                if (confirmationInput.value.length === 0) {
+                    matchLabel.textContent = '';
+                } else {
+                    const matches = password === confirmationInput.value;
+                    matchLabel.textContent = matches ? 'Coincide' : 'No coincide';
+                    matchLabel.classList.toggle('text-success', matches);
+                    matchLabel.classList.toggle('text-danger', !matches);
+                }
+            };
+
+            [nameInput, emailInput, passwordInput, confirmationInput].forEach((input) => {
+                input.addEventListener('input', updatePasswordStatus);
+            });
+
+            updatePasswordStatus();
+        })();
+    </script>
 </x-guest-layout>

@@ -22,6 +22,11 @@ class StoreReglaConversionRequest extends FormRequest
             'rendimiento_minimo' => 'required|numeric|min:0',
             'rendimiento_maximo' => 'required|numeric|min:0',
             'tipo_conversion' => 'required|string|in:Estática,Variable,estatica,variable',
+            'detalles' => 'nullable|array',
+            'detalles.*.insumo_id' => 'required|integer|exists:insumos,id',
+            'detalles.*.cantidad' => 'required|numeric|min:0.001',
+            'detalles.*.unidad_medida_id' => 'required|integer|exists:unidad_medidas,id',
+            'detalles.*.observacion' => 'nullable|string|max:255',
         ];
 
         if (Schema::hasColumn('reglas_conversion', 'unidad_entrada_id')) {
@@ -37,6 +42,10 @@ class StoreReglaConversionRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $this->merge([
+            'cantidad_entrada' => 1,
+        ]);
+
         if ($this->filled('tipo_conversion')) {
             $tipoConversion = strtolower((string) $this->input('tipo_conversion'));
 
@@ -81,6 +90,9 @@ class StoreReglaConversionRequest extends FormRequest
             'tipo_conversion.in' => 'El tipo de conversion debe ser estatica o variable.',
             'unidad_medida_entrada_id.required' => 'La unidad de medida de entrada es obligatoria.',
             'unidad_medida_resultante_id.required' => 'La unidad de medida resultante es obligatoria.',
+            'detalles.*.insumo_id.required' => 'El insumo del detalle es obligatorio.',
+            'detalles.*.cantidad.required' => 'La cantidad del detalle es obligatoria.',
+            'detalles.*.unidad_medida_id.required' => 'La unidad de medida del detalle es obligatoria.',
         ];
     }
 }

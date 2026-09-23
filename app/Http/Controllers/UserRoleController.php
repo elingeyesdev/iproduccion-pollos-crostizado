@@ -21,6 +21,7 @@ class UserRoleController extends Controller
     {
         $data = $request->validated();
         $user->syncAssignedRoles($data['roles']);
+        $user->tokens()->delete();
 
         return redirect()->route('users.index')
             ->with('success', 'Roles actualizados correctamente.');

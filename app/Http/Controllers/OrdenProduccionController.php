@@ -6,6 +6,7 @@ use App\Http\Requests\OrdenProduccionRequest;
 use App\Models\OrdenProduccion;
 use App\Models\Insumo;
 use App\Models\OrdenProduccionInsumo;
+use App\Models\ReglaConversion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -36,12 +37,14 @@ class OrdenProduccionController extends Controller
     public function create(): View
     {
         $ordenProduccion = new OrdenProduccion();
+        $ordenProduccion->numero_orden = $this->generarNumeroOrden();
         $insumos = Insumo::with('unidadMedida')
             ->where('estado', 1)
             ->orderBy('nombre')
             ->get();
+        $reglas = $this->reglasDisponibles();
 
-        return view('orden-produccion.create', compact('ordenProduccion', 'insumos'));
+        return view('orden-produccion.create', compact('ordenProduccion', 'insumos', 'reglas'));
     }
 
     public function store(OrdenProduccionRequest $request): RedirectResponse
@@ -49,9 +52,14 @@ class OrdenProduccionController extends Controller
         $data = $request->validated();
 
         DB::transaction(function () use ($data) {
+            $numeroOrden = !empty($data['numero_orden'])
+                ? $data['numero_orden']
+                : $this->generarNumeroOrden();
+
             $ordenProduccion = OrdenProduccion::create([
-                'numero_orden' => $data['numero_orden'],
+                'numero_orden' => $numeroOrden,
                 'fecha_programada' => $data['fecha_programada'],
+                'regla_conversion_id' => $data['regla_conversion_id'],
                 'estado' => 1,
             ]);
 
@@ -72,7 +80,13 @@ class OrdenProduccionController extends Controller
 
     public function show(OrdenProduccion $ordenProduccion): View
     {
-        $ordenProduccion->loadMissing(['insumos.insumo.unidadMedida']);
+        $ordenProduccion->loadMissing([
+            'insumos.insumo.unidadMedida',
+            'reglaConversion.insumo',
+            'reglaConversion.producto',
+            'reglaConversion.recetaConversiones.insumo',
+            'reglaConversion.recetaConversiones.unidadMedida',
+        ]);
         $ordenProduccion->loadCount(['insumos as insumos_pendientes_count' => function ($query) {
             $query->where('estado', 1)->whereDoesntHave('produccion');
         }]);
@@ -87,8 +101,9 @@ class OrdenProduccionController extends Controller
             ->where('estado', 1)
             ->orderBy('nombre')
             ->get();
+        $reglas = $this->reglasDisponibles();
 
-        return view('orden-produccion.edit', compact('ordenProduccion', 'insumos'));
+        return view('orden-produccion.edit', compact('ordenProduccion', 'insumos', 'reglas'));
     }
 
     public function update(OrdenProduccionRequest $request, OrdenProduccion $ordenProduccion): RedirectResponse
@@ -99,6 +114,7 @@ class OrdenProduccionController extends Controller
             $ordenProduccion->update([
                 'numero_orden' => $data['numero_orden'],
                 'fecha_programada' => $data['fecha_programada'],
+                'regla_conversion_id' => $data['regla_conversion_id'],
                 'estado' => 1,
             ]);
 
@@ -125,5 +141,29 @@ class OrdenProduccionController extends Controller
 
         return Redirect::route('orden-producciones.index')
             ->with('success', 'Orden de producción eliminada correctamente.');
+    }
+
+    private function generarNumeroOrden(): string
+    {
+        $anioMes = now()->format('Y-m');
+        $prefijo = 'OR-PRO-' . $anioMes . '-';
+
+        $ultima = OrdenProduccion::latest('id')->first();
+
+        $numero = 1;
+        if ($ultima && preg_match('/-(\d{4})$/', $ultima->numero_orden, $matches)) {
+            $numero = (int) $matches[1] + 1;
+        }
+
+        return $prefijo . str_pad($numero, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function reglasDisponibles(): \Illuminate\Support\Collection
+    {
+        return ReglaConversion::query()
+            ->with(['insumo:id,nombre', 'producto:id,nombre', 'recetaConversiones.insumo:id,nombre'])
+            ->where('estado', 1)
+            ->orderBy('id')
+            ->get();
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UserRequest extends FormRequest
 {
@@ -14,7 +15,8 @@ class UserRequest extends FormRequest
 
     public function rules(): array
     {
-        $userId = $this->route('user')?->id;
+        $routeUser = $this->route('user');
+        $userId = $routeUser instanceof \App\Models\User ? $routeUser->id : $routeUser;
 
         $rules = [
             'name' => ['required', 'string', 'max:120'],
@@ -29,10 +31,20 @@ class UserRequest extends FormRequest
         ];
 
         if ($this->isMethod('POST')) {
-            $rules['password'] = ['required', 'string', 'min:8', 'confirmed'];
+            $rules['password'] = ['required', 'string', Password::min(8)->mixedCase()->numbers()->uncompromised(), 'confirmed'];
         } else {
-            $rules['password'] = ['nullable', 'string', 'min:8', 'confirmed'];
+            $rules['password'] = ['nullable', 'string', Password::min(8)->mixedCase()->numbers()->uncompromised(), 'confirmed'];
         }
+
+        $rules['password'][] = function (string $attribute, mixed $value, \Closure $fail): void {
+            $password = mb_strtolower((string) $value);
+            $name = mb_strtolower(trim((string) $this->input('name')));
+            $email = mb_strtolower(trim((string) $this->input('email')));
+
+            if ($password !== '' && ($password === $name || $password === $email)) {
+                $fail('La contraseña no puede ser igual al nombre de usuario o al correo electrónico.');
+            }
+        };
 
         return $rules;
     }

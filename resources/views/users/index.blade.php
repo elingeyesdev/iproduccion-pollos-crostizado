@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Administrar Usuario" subtitle="Administración de cuentas del sistema.">
         <x-slot:actions>
-            <a href="{{ route('users.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nuevo usuario</a>
+            <a href="{{ route('users.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear usuario</a>
         </x-slot:actions>
     </x-crud.page-header>
 

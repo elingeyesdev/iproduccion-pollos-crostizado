@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Órdenes de producción" subtitle="Programación de lotes de producción.">
         <x-slot:actions>
-            <a href="{{ route('orden-producciones.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nueva orden</a>
+            <a href="{{ route('orden-producciones.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear orden</a>
         </x-slot:actions>
     </x-crud.page-header>
 
@@ -59,9 +59,6 @@
                             </td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
-                                    @if ((int) ($ordenProduccion->insumos_pendientes_count ?? 0) > 0)
-                                        <a href="{{ route('producciones.lote.create', $ordenProduccion) }}" class="btn btn-sm btn-app-primary"><i class="fa-solid fa-play me-1"></i> Ejecutar</a>
-                                    @endif
                                     <a href="{{ route('orden-producciones.show', $ordenProduccion) }}" class="btn btn-sm btn-light border"><i class="fa-solid fa-eye me-1"></i> Ver</a>
                                     <a href="{{ route('orden-producciones.edit', $ordenProduccion) }}" class="btn btn-sm btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
                                     <form id="delete-form-orden-produccion-{{ $ordenProduccion->id }}" action="{{ route('orden-producciones.destroy', $ordenProduccion) }}" method="POST">

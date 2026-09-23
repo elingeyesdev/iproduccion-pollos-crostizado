@@ -1,0 +1,48 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Producción Pollos Krosty",
+        "description": "API para gestión de productos, insumos, recetas, producción, ventas, usuarios y autenticación.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/clientes": {
+            "get": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Listar clientes",
+                "operationId": "3ab1bd0bc1c6d13508917ec1f71f52f5",
+                "responses": {
+                    "200": {
+                        "description": "Clientes obtenidos correctamente"
+                    }
+                }
+            }
+        },
+        "/api/componente-productos": {
+            "get": {
+                "tags": [
+                    "Componentes de Producto"
+                ],
+                "summary": "Listar componentes de producto",
+                "operationId": "fcf3091d3b365c96e105b6741f8e1615",
+                "responses": {
+                    "200": {
+                        "description": "Componentes de producto obtenidos correctamente"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Clientes",
+            "description": "Clientes"
+        },
+        {
+            "name": "Componentes de Producto",
+            "description": "Componentes de Producto"
+        }
+    ]
+}

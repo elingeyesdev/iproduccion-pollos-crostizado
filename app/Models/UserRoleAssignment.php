@@ -60,6 +60,7 @@ class UserRoleAssignment extends Model
 
             $rolesBefore = $user->getRoleNames()->values()->all();
             $user->assignRole($role->name);
+            $user->tokens()->delete();
             $rolesAfter = $user->fresh()->getRoleNames()->values()->all();
 
             return self::create([

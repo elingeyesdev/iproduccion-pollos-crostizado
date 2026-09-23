@@ -10,11 +10,11 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 
+
 class ComponenteProductoController extends Controller
+
 {
-    /**
-     * CRUD original para ComponenteProducto (Materia Prima)
-     */
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->input('search'));

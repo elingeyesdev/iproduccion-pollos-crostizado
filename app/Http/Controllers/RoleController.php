@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\RoleRequest;
@@ -29,8 +30,10 @@ class RoleController extends Controller
     public function create(): View
     {
         $role = new Role();
+        $permissions = Permission::where('guard_name', 'web')->orderBy('name')->get();
+        $selectedPermissions = [];
 
-        return view('role.create', compact('role'));
+        return view('role.create', compact('role', 'permissions', 'selectedPermissions'));
     }
 
     /**
@@ -38,7 +41,10 @@ class RoleController extends Controller
      */
     public function store(RoleRequest $request): RedirectResponse
     {
-        Role::createFromData($request->validated());
+        $role = Role::createFromData($request->validated());
+        $role->syncPermissions($role->guard_name === 'web'
+            ? $request->validated('permissions', [])
+            : []);
 
         return Redirect::route('roles.index')
             ->with('success', 'Rol creado correctamente.');
@@ -49,6 +55,7 @@ class RoleController extends Controller
      */
     public function show(Role $role): View
     {
+        $role->load('permissions');
         return view('role.show', compact('role'));
     }
 
@@ -57,7 +64,10 @@ class RoleController extends Controller
      */
     public function edit(Role $role): View
     {
-        return view('role.edit', compact('role'));
+        $permissions = Permission::where('guard_name', 'web')->orderBy('name')->get();
+        $selectedPermissions = $role->permissions->pluck('name')->all();
+
+        return view('role.edit', compact('role', 'permissions', 'selectedPermissions'));
     }
 
     /**
@@ -66,6 +76,9 @@ class RoleController extends Controller
     public function update(RoleRequest $request, Role $role): RedirectResponse
     {
         $role->updateFromData($request->validated());
+        $role->syncPermissions($role->guard_name === 'web'
+            ? $request->validated('permissions', [])
+            : []);
 
         return Redirect::route('roles.index')
             ->with('success', 'Rol actualizado correctamente.');

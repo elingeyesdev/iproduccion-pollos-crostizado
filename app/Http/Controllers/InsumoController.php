@@ -34,7 +34,7 @@ class InsumoController extends Controller
 
     public function create(): View
     {
-        $insumo = new Insumo();
+        $insumo = new Insumo(['estado' => 1]);
         $unidades = UnidadMedida::where('estado', 1)->orderBy('nombre')->get();
 
         return view('insumo.create', compact('insumo', 'unidades'));
@@ -42,7 +42,11 @@ class InsumoController extends Controller
 
     public function store(InsumoRequest $request): RedirectResponse
     {
-        Insumo::create($request->validated());
+        $data = $request->validated();
+        $data['stock_actual'] = 0;
+        $data['estado'] = 1;
+
+        Insumo::create($data);
 
         return Redirect::route('insumos.index')
             ->with('success', 'Insumo creado correctamente.');

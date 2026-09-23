@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Mermas" subtitle="Control de mermas por producción.">
         <x-slot:actions>
-            <a href="{{ route('mermas.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nueva merma</a>
+            <a href="{{ route('mermas.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear merma</a>
         </x-slot:actions>
     </x-crud.page-header>
 

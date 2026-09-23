@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\IngresoInsumoController;
 use App\Http\Controllers\ProfileController;
@@ -30,21 +31,20 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
 
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'route.permission'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 
 
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::resource('/users', UserController::class);
+    Route::resource('/users', UserController::class)
+        ->middleware('no.store.sensitive');
     Route::get('/users/{user}/roles', [UserRoleController::class, 'edit'])->name('users.roles.edit');
     Route::put('/users/{user}/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
     Route::get('/asignacion-roles', [UserRoleAssignmentController::class, 'index'])->name('role-assignments.index');
@@ -74,17 +74,20 @@ Route::middleware('auth')->group(function () {
     Route::put('regla-conversiones/{reglaConversion}', [ReglaConversionController::class, 'update'])->name('regla-conversiones.update');
     Route::delete('regla-conversiones/{reglaConversion}', [ReglaConversionController::class, 'destroy'])->name('regla-conversiones.destroy');
     Route::get('producciones', [ProduccionController::class, 'index'])->name('producciones.index');
-    Route::get('producciones/create', [ProduccionController::class, 'create'])->name('producciones.create');
-    Route::post('producciones', [ProduccionController::class, 'store'])->name('producciones.store');
     Route::get('producciones/lote/{ordenProduccion}', [ProduccionController::class, 'loteCreate'])->name('producciones.lote.create');
     Route::post('producciones/lote/{ordenProduccion}', [ProduccionController::class, 'loteStore'])->name('producciones.lote.store');
     Route::get('producciones/{produccion}', [ProduccionController::class, 'show'])->name('producciones.show');
 
-    Route::get('reportes/insumos', [ReporteController::class, 'insumos'])->name('reportes.insumos');
-    Route::get('reportes/productos', [ReporteController::class, 'productos'])->name('reportes.productos');
-    Route::get('reportes/ventas-mensual', [ReporteController::class, 'ventasMensual'])->name('reportes.ventas-mensual');
-    Route::get('reportes/produccion-mensual', [ReporteController::class, 'produccionMensual'])->name('reportes.produccion-mensual');
-    Route::get('reportes/stock', [ReporteController::class, 'stock'])->name('reportes.stock');
+    Route::get('reportes/insumos', [ReporteController::class, 'insumos'])
+        ->middleware('no.store.sensitive')->name('reportes.insumos');
+    Route::get('reportes/productos', [ReporteController::class, 'productos'])
+        ->middleware('no.store.sensitive')->name('reportes.productos');
+    Route::get('reportes/ventas-mensual', [ReporteController::class, 'ventasMensual'])
+        ->middleware('no.store.sensitive')->name('reportes.ventas-mensual');
+    Route::get('reportes/produccion-mensual', [ReporteController::class, 'produccionMensual'])
+        ->middleware('no.store.sensitive')->name('reportes.produccion-mensual');
+    Route::get('reportes/stock', [ReporteController::class, 'stock'])
+        ->middleware('no.store.sensitive')->name('reportes.stock');
 
     Route::resource('ingreso-bebidas', IngresoBebidaController::class);
     Route::resource('mermas', MermaController::class);

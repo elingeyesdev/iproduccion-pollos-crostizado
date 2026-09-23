@@ -61,6 +61,39 @@ class ReglaConversion extends Model
         return $this->hasMany(Produccion::class, 'regla_conversion_id');
     }
 
+    public function recetaConversiones(): HasMany
+    {
+        return $this->hasMany(DetalleReglaConversion::class)->where('estado', 1);
+    }
+
+    public function rangoRendimiento(float $cantidadPlanificada): array
+    {
+        return [
+            'minimo' => $cantidadPlanificada * (float) $this->rendimiento_min,
+            'maximo' => $cantidadPlanificada * (float) $this->rendimiento_max,
+        ];
+    }
+
+    public function aceptaCantidadObtenida(float $cantidad, float $cantidadPlanificada): bool
+    {
+        $rango = $this->rangoRendimiento($cantidadPlanificada);
+
+        return $cantidad >= $rango['minimo'] && $cantidad <= $rango['maximo'];
+    }
+
+    public function mensajeRendimiento(float $cantidad, float $cantidadPlanificada): string
+    {
+        $rango = $this->rangoRendimiento($cantidadPlanificada);
+
+        return sprintf(
+            'La cantidad obtenida de %.2f está fuera del rendimiento permitido para %.2f planificados. Debe estar entre %.2f y %.2f.',
+            $cantidad,
+            $cantidadPlanificada,
+            $rango['minimo'],
+            $rango['maximo']
+        );
+    }
+
     public function resolverProducto(): ?Producto
     {
         if ($this->producto) {

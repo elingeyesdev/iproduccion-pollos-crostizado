@@ -3,6 +3,12 @@
         Options -MultiViews -Indexes
     </IfModule>
 
+    RewriteRule "(^|/)\." - [F,L]
+    RewriteRule "(^|/)(Thumbs\.db|\.env(\..*)?)$" - [F,L,NC]
+
+    RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|CONNECT)$ [NC]
+    RewriteRule ^ - [R=405,L]
+
     RewriteEngine On
 
     # Handle Authorization Header

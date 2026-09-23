@@ -26,6 +26,16 @@
                     </div>
                 </div>
             </div>
+
+            <hr class="my-4">
+            <h5 class="mb-3">Permisos asignados</h5>
+            <div class="d-flex flex-wrap gap-2">
+                @forelse ($role->permissions->sortBy('name') as $permission)
+                    <span class="badge text-bg-light border">{{ $permission->name }}</span>
+                @empty
+                    <span class="text-muted">Este rol no tiene permisos asignados.</span>
+                @endforelse
+            </div>
         </div>
     </div>
 @endsection

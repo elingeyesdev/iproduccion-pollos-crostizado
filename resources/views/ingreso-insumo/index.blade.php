@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Ingresos de insumos" subtitle="Registro de ingresos con detalle por insumo.">
         <x-slot:actions>
-            <a href="{{ route('ingreso-insumos.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nuevo ingreso</a>
+            <a href="{{ route('ingreso-insumos.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear ingreso</a>
         </x-slot:actions>
     </x-crud.page-header>
 

@@ -34,7 +34,7 @@ class ProductoController extends Controller
 
     public function create(): View
     {
-        $producto = new Producto();
+        $producto = new Producto(['cantidad_actual' => 0]);
         $tipoProductos = TipoProducto::where('estado', 1)->orderBy('nombre')->get();
 
         return view('producto.create', compact('producto', 'tipoProductos'));
@@ -42,7 +42,10 @@ class ProductoController extends Controller
 
     public function store(ProductoRequest $request): RedirectResponse
     {
-        Producto::create($request->validated());
+        $data = $request->validated();
+        $data['cantidad_actual'] = 0;
+
+        Producto::create($data);
 
         return Redirect::route('productos.index')
             ->with('success', 'Producto creado correctamente.');

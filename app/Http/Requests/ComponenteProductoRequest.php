@@ -18,4 +18,24 @@ class ComponenteProductoRequest extends FormRequest
             'equivalencia' => 'nullable|string|max:255',
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'nombre' => 'nombre del componente',
+            'equivalencia' => 'equivalencia',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'nombre.required' => 'El nombre del componente es obligatorio.',
+            'nombre.string' => 'El nombre debe ser un texto válido.',
+            'nombre.max' => 'El nombre no puede superar los 255 caracteres.',
+
+            'equivalencia.string' => 'La equivalencia debe ser un texto válido.',
+            'equivalencia.max' => 'La equivalencia no puede superar los 255 caracteres.',
+        ];
+    }
 }

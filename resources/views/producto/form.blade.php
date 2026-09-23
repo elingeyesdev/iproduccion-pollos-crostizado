@@ -25,7 +25,11 @@
     </div>
 
     <div class="col-md-6">
-        <x-crud.form-input name="cantidad_actual" label="Cantidad actual" type="number" :value="$producto->cantidad_actual" placeholder="0" required />
+        @if ($producto->exists)
+            <x-crud.form-input name="cantidad_actual" label="Cantidad actual" type="number" :value="$producto->cantidad_actual" placeholder="0" required />
+        @else
+            <x-crud.form-input name="cantidad_actual" label="Cantidad actual" type="number" value="0" readonly required />
+        @endif
     </div>
 
     <div class="col-12 d-flex justify-content-end gap-2 mt-2">

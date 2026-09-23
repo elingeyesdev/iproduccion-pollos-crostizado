@@ -80,4 +80,31 @@ class ProductoComposicionRequest extends FormRequest
 
         return is_numeric($producto) ? (int) $producto : null;
     }
+
+    public function attributes(): array
+    {
+        return [
+            'producto_id' => 'producto',
+            'ingredientes' => 'ingredientes',
+            'ingredientes.*.id' => 'ingrediente',
+            'ingredientes.*.cantidad' => 'cantidad',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'producto_id.required' => 'Debes seleccionar un producto.',
+            'producto_id.exists' => 'El producto seleccionado no existe.',
+
+            'ingredientes.array' => 'Los ingredientes deben ser una lista válida.',
+
+            'ingredientes.*.id.required' => 'El ingrediente de la línea :position es obligatorio.',
+            'ingredientes.*.id.exists' => 'El ingrediente seleccionado en la línea :position no existe.',
+
+            'ingredientes.*.cantidad.required' => 'La cantidad del ingrediente en la línea :position es obligatoria.',
+            'ingredientes.*.cantidad.numeric' => 'La cantidad del ingrediente en la línea :position debe ser un número.',
+            'ingredientes.*.cantidad.min' => 'La cantidad del ingrediente en la línea :position debe ser mayor a 0.',
+        ];
+    }
 }

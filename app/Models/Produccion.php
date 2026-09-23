@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Collection;
 
 class Produccion extends Model
@@ -13,7 +14,6 @@ class Produccion extends Model
     protected $table = 'producciones';
 
     protected $fillable = [
-        'orden_produccion_id',
         'orden_produccion_insumo_id',
         'regla_conversion_id',
         'receta_id',
@@ -29,9 +29,16 @@ class Produccion extends Model
         'cantidad_obtenida' => 'decimal:2',
     ];
 
-    public function ordenProduccion(): BelongsTo
+    public function ordenProduccion(): HasOneThrough
     {
-        return $this->belongsTo(OrdenProduccion::class);
+        return $this->hasOneThrough(
+            OrdenProduccion::class,
+            OrdenProduccionInsumo::class,
+            'orden_produccion_id',
+            'id',
+            'orden_produccion_insumo_id',
+            'id'
+        );
     }
 
     public function ordenProduccionInsumo(): BelongsTo
@@ -70,9 +77,9 @@ class Produccion extends Model
 
     public function getInsumosPlanificadosAttribute(): Collection
     {
-        $this->loadMissing('ordenProduccion.insumos.insumo.unidadMedida');
+        $this->loadMissing('ordenProduccionInsumo.ordenProduccion.insumos.insumo.unidadMedida');
 
-        return $this->ordenProduccion?->insumos ?? collect();
+        return $this->ordenProduccionInsumo?->ordenProduccion?->insumos ?? collect();
     }
 
     public function getDetalleOrdenAttribute(): ?OrdenProduccionInsumo

@@ -9,6 +9,7 @@ use App\Models\ReglaConversion;
 use App\Models\UnidadMedida;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
@@ -64,7 +65,11 @@ class ReglaConversionController extends Controller
             $payload['unidad_salida_id'] = $data['unidad_medida_resultante_id'] ?? null;
         }
 
-        ReglaConversion::create($payload);
+        DB::transaction(function () use ($payload, $data) {
+            $reglaConversion = ReglaConversion::create($payload);
+
+            $this->guardarDetalles($reglaConversion, $data['detalles'] ?? []);
+        });
 
         return Redirect::route('regla-conversiones.index')
             ->with('success', 'Regla de conversión creada correctamente.');
@@ -98,6 +103,7 @@ class ReglaConversionController extends Controller
 
     public function edit(ReglaConversion $reglaConversion): View
     {
+        $reglaConversion->load('recetaConversiones');
         $insumos = Insumo::query()->where('estado', 1)->orderBy('nombre')->get();
         $productos = Producto::query()->where('estado', 1)->orderBy('nombre')->get();
         $unidades = UnidadMedida::query()->where('estado', 1)->orderBy('nombre')->get();
@@ -143,10 +149,33 @@ class ReglaConversionController extends Controller
             $payload['unidad_salida_id'] = $data['unidad_medida_resultante_id'] ?? null;
         }
 
-        $reglaConversion->update($payload);
+        DB::transaction(function () use ($reglaConversion, $payload, $data) {
+            $reglaConversion->update($payload);
+
+            $this->guardarDetalles($reglaConversion, $data['detalles'] ?? []);
+        });
 
         return Redirect::route('regla-conversiones.index')
             ->with('success', 'Regla de conversión actualizada correctamente.');
+    }
+
+    private function guardarDetalles(ReglaConversion $reglaConversion, array $detalles): void
+    {
+        $reglaConversion->recetaConversiones()->delete();
+
+        foreach ($detalles as $detalle) {
+            if (empty($detalle['insumo_id']) || empty($detalle['cantidad']) || empty($detalle['unidad_medida_id'])) {
+                continue;
+            }
+
+            $reglaConversion->recetaConversiones()->create([
+                'insumo_id' => $detalle['insumo_id'],
+                'cantidad' => $detalle['cantidad'],
+                'unidad_medida_id' => $detalle['unidad_medida_id'],
+                'observacion' => $detalle['observacion'] ?? null,
+                'estado' => 1,
+            ]);
+        }
     }
 
     public function destroy(ReglaConversion $reglaConversion): RedirectResponse

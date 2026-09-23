@@ -21,7 +21,11 @@
     </div>
 
     <div class="col-md-6">
-        <x-crud.form-input name="stock_actual" label="Stock actual" type="number" step="0.01" :value="$insumo->stock_actual" placeholder="0" required />
+        @if ($insumo->exists)
+            <x-crud.form-input name="stock_actual" label="Stock actual" type="number" step="0.01" :value="$insumo->stock_actual" placeholder="0" required />
+        @else
+            <x-crud.form-input name="stock_actual" label="Stock actual" type="number" value="0" readonly required />
+        @endif
     </div>
 
     <div class="col-md-6">
@@ -29,17 +33,18 @@
     </div>
 
     <div class="col-md-6">
-        <div class="mb-3">
-            <label for="estado" class="form-label fw-semibold">Estado</label>
-            <select id="estado" name="estado" class="form-select @error('estado') is-invalid @enderror" required>
-                <option value="">Selecciona una opción</option>
-                <option value="1" @selected((string) old('estado', (string) $insumo->estado) === '1')>Activo</option>
-                <option value="0" @selected((string) old('estado', (string) $insumo->estado) === '0')>Inactivo</option>
-            </select>
-            @error('estado')
-                <div class="invalid-feedback d-block">{{ $message }}</div>
-            @enderror
-        </div>
+        @if ($insumo->exists)
+            <div class="mb-3">
+                <label for="estado" class="form-label fw-semibold">Estado</label>
+                <select id="estado" name="estado" class="form-select @error('estado') is-invalid @enderror" required>
+                    <option value="1" @selected((string) old('estado', (string) $insumo->estado) === '1')>Activo</option>
+                    <option value="0" @selected((string) old('estado', (string) $insumo->estado) === '0')>Inactivo</option>
+                </select>
+                @error('estado')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
+        @endif
     </div>
 
     <div class="col-12 d-flex justify-content-end gap-2 mt-2">

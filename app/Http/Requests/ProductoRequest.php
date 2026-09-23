@@ -20,4 +20,34 @@ class ProductoRequest extends FormRequest
             'cantidad_actual' => 'required|integer|min:0',
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'nombre' => 'nombre del producto',
+            'precio' => 'precio',
+            'tipo_producto_id' => 'tipo de producto',
+            'cantidad_actual' => 'cantidad actual',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'nombre.required' => 'El nombre del producto es obligatorio.',
+            'nombre.string' => 'El nombre debe ser un texto válido.',
+            'nombre.max' => 'El nombre no puede superar los 255 caracteres.',
+
+            'precio.required' => 'El precio es obligatorio.',
+            'precio.numeric' => 'El precio debe ser un número.',
+            'precio.min' => 'El precio no puede ser negativo.',
+
+            'tipo_producto_id.required' => 'Debes seleccionar un tipo de producto.',
+            'tipo_producto_id.exists' => 'El tipo de producto seleccionado no es válido.',
+
+            'cantidad_actual.required' => 'La cantidad actual es obligatoria.',
+            'cantidad_actual.integer' => 'La cantidad actual debe ser un número entero.',
+            'cantidad_actual.min' => 'La cantidad actual no puede ser negativa.',
+        ];
+    }
 }

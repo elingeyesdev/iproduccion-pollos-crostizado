@@ -104,7 +104,11 @@ class ReporteController extends Controller
             ->with(['ordenProduccionInsumo.insumo:id,nombre', 'producto', 'reglaConversion'])
             ->get();
 
-        $totalOrdenes = $producciones->pluck('orden_produccion_id')->unique()->count();
+        $totalOrdenes = $producciones
+            ->pluck('ordenProduccionInsumo.orden_produccion_id')
+            ->filter()
+            ->unique()
+            ->count();
 
         $insumosConsumidos = $producciones
             ->groupBy(fn (Produccion $p) => $p->ordenProduccionInsumo?->insumo?->nombre ?? 'Sin insumo')
@@ -121,7 +125,7 @@ class ReporteController extends Controller
         // agrupa por (orden, cantidad_obtenida) para contar cada lote una sola vez sin
         // perder las ejecuciones individuales que coinciden en la misma orden.
         $productosObtenidos = $producciones
-            ->groupBy(fn (Produccion $p) => $p->orden_produccion_id . '|' . $p->cantidad_obtenida)
+            ->groupBy(fn (Produccion $p) => ($p->ordenProduccionInsumo?->orden_produccion_id ?? 'sin-orden') . '|' . $p->cantidad_obtenida)
             ->map(function ($grupoLote) {
                 $primera = $grupoLote->first();
 

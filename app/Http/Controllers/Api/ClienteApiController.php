@@ -7,10 +7,22 @@ use App\Http\Requests\ClienteRequest;
 use App\Models\Cliente;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
+
 
 class ClienteApiController extends Controller
 {
-
+     #[OA\Get(
+        path: '/api/clientes',
+        summary: 'Listar clientes',
+        tags: ['Clientes'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Clientes obtenidos correctamente'
+            )
+        ]
+    )]
 public function index(): JsonResponse
     {
         $clientes = Cliente::query()

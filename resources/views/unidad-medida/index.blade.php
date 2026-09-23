@@ -6,7 +6,7 @@
     <x-crud.page-header title="Unidades de Medida" subtitle="Catálogo de unidades para la gestión de insumos.">
         <x-slot:actions>
             <a href="{{ route('unidad-medidas.create') }}" class="btn btn-app-primary">
-                <i class="fa-solid fa-plus me-1"></i> Nueva unidad
+                <i class="fa-solid fa-plus me-1"></i> Crear unidad
             </a>
         </x-slot:actions>
     </x-crud.page-header>

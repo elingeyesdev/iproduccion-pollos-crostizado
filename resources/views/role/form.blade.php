@@ -17,6 +17,34 @@
         </div>
     </div>
 
+    <div class="col-12">
+        <label class="form-label fw-semibold">Permisos</label>
+        <div class="row g-3">
+            @foreach ($permissions->groupBy(fn ($permission) => \Illuminate\Support\Str::before($permission->name, '.')) as $module => $modulePermissions)
+                <div class="col-md-6 col-xl-4">
+                    <div class="border rounded-3 p-3 h-100">
+                        <strong class="d-block mb-2 text-capitalize">{{ str_replace('-', ' ', $module) }}</strong>
+                        @foreach ($modulePermissions as $permission)
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="permissions[]" value="{{ $permission->name }}" id="permission-{{ $permission->id }}"
+                                    @checked(in_array($permission->name, old('permissions', $selectedPermissions), true))>
+                                <label class="form-check-label" for="permission-{{ $permission->id }}">
+                                    {{ \Illuminate\Support\Str::after($permission->name, '.') }}
+                                </label>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        @error('permissions')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+        @enderror
+        @error('permissions.*')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+        @enderror
+    </div>
+
     <div class="col-12 d-flex justify-content-end gap-2 mt-2">
         <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary">Cancelar</a>
         <button type="submit" class="btn btn-app-primary"><i class="fa-solid fa-floppy-disk me-1"></i>{{ $submitLabel ?? 'Guardar' }}</button>

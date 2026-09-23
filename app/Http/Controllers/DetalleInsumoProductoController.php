@@ -18,7 +18,7 @@ class DetalleInsumoProductoController extends Controller
         $search = trim((string) $request->input('search'));
 
         $detalles = DetalleInsumoProducto::query()
-            ->with(['produccion:id,orden_produccion_id', 'insumo:id,nombre'])
+            ->with(['produccion:id,orden_produccion_insumo_id', 'insumo:id,nombre'])
             ->where('estado', 1)
             ->when($search, function ($query) use ($search) {
                 $query->whereHas('insumo', function ($q) use ($search) {

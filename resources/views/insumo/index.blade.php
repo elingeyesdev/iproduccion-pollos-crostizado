@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Insumos" subtitle="Catálogo de insumos para producción.">
         <x-slot:actions>
-            <a href="{{ route('insumos.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nuevo insumo</a>
+            <a href="{{ route('insumos.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear insumo</a>
         </x-slot:actions>
     </x-crud.page-header>
 

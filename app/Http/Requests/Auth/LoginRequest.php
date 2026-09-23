@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -33,6 +34,26 @@ class LoginRequest extends FormRequest
         ];
     }
 
+    public function attributes(): array
+    {
+        return [
+            'email' => 'correo electrónico',
+            'password' => 'contraseña',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.string' => 'El correo electrónico debe ser un texto válido.',
+            'email.email' => 'Debes ingresar un correo electrónico válido.',
+
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.string' => 'La contraseña debe ser un texto válido.',
+        ];
+    }
+
     /**
      * Attempt to authenticate the request's credentials.
      *
@@ -42,11 +63,25 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        $email = Str::lower(trim((string) $this->input('email', '')));
+        $user = $email !== '' ? User::whereRaw('LOWER(email) = ?', [$email])->first() : null;
+
+        if ($user && ! $user->hasVerifiedEmail()) {
+            throw ValidationException::withMessages([
+                'email' => 'Debes verificar tu correo electrónico antes de iniciar sesión.',
+            ]);
+        }
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            $attempts = RateLimiter::attempts($this->throttleKey());
+            $remaining = max(0, 5 - $attempts);
+
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => $remaining > 0
+                    ? 'Credenciales incorrectas. Te quedan ' . $remaining . ' intento(s) antes de quedar bloqueado.'
+                    : trans('auth.failed'),
             ]);
         }
 

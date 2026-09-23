@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Asignación de roles" subtitle="Registro histórico de roles asignados a usuarios.">
         <x-slot:actions>
-            <a href="{{ route('role-assignments.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nueva asignación</a>
+            <a href="{{ route('role-assignments.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear asignación</a>
         </x-slot:actions>
     </x-crud.page-header>
 

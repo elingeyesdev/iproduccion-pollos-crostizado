@@ -31,7 +31,9 @@
     </div>
 
     <div class="col-md-3">
-        <x-crud.form-input name="cantidad_entrada" label="Cantidad Entrada" type="number" step="0.01" :value="$reglaConversion->cantidad_entrada ?? 1" placeholder="1.00" required />
+        <label for="cantidad_entrada" class="form-label fw-semibold">Cantidad Entrada</label>
+        <input type="number" id="cantidad_entrada" name="cantidad_entrada" class="form-control" value="1" readonly>
+        <div class="form-text">Siempre es 1 (unidad base de la regla).</div>
     </div>
 
     <!-- Salida -->

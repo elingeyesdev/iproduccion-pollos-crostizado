@@ -42,6 +42,19 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_unverified_users_can_not_authenticate(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();

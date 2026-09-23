@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Reglas de conversión" subtitle="Define rendimientos para la ejecución de producción.">
         <x-slot:actions>
-            <a href="{{ route('regla-conversiones.create') }}" class="btn btn-regla-primary"><i class="fa-solid fa-plus me-1"></i> Nueva regla</a>
+            <a href="{{ route('regla-conversiones.create') }}" class="btn btn-regla-primary"><i class="fa-solid fa-plus me-1"></i> Crear regla</a>
         </x-slot:actions>
     </x-crud.page-header>
 
