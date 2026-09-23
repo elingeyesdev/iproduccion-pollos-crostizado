@@ -9,7 +9,41 @@
         </button>
 
         <div class="ms-2">
-            <p class="mb-0 fw-bold brand-title">SISTEMA WEB  KROSTY-SADO</p>
+            <p class="mb-0 brand-title" aria-label="Sistema Web Krosty-Sado">
+                @php
+                    $miniLogoCandidates = [
+                        public_path('images/logo.svg'),
+                        public_path('images/logo.png'),
+                        public_path('images/logo.jpg'),
+                        public_path('images/logo.jpeg'),
+                        public_path('images/logo.webp'),
+                    ];
+                    $miniLogoPath = null;
+                    foreach ($miniLogoCandidates as $candidate) {
+                        if (file_exists($candidate)) {
+                            $miniLogoPath = str_replace(public_path(), '', $candidate);
+                            $miniLogoPath = str_replace('\\', '/', $miniLogoPath);
+                            break;
+                        }
+                    }
+                @endphp
+
+                @if ($miniLogoPath)
+                    <img src="{{ asset($miniLogoPath) }}" alt="Logo" style="width:42px;height:42px;object-fit:contain;border-radius:50% !important;background:#fff;padding:3px;border:2px solid rgba(179,0,0,0.28);box-shadow:0 3px 10px rgba(0,0,0,0.09);flex-shrink:0;" onerror="this.style.display='none'; const hf = document.getElementById('header-icon-fallback'); hf.style.display='inline-flex';">
+                    <span id="header-icon-fallback" class="brand-title-icon" style="display:none;width:42px;height:42px;border-radius:50% !important;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;background:linear-gradient(135deg,#a81616 0%,#b30000 100%);border:2px solid rgba(255,255,255,0.85);box-shadow:0 3px 10px rgba(179,0,0,0.24);flex-shrink:0;">
+                        <i class="fa-solid fa-drumstick-bite"></i>
+                    </span>
+                @else
+                    <span class="brand-title-icon" style="width:42px;height:42px;border-radius:50% !important;display:inline-flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;background:linear-gradient(135deg,#a81616 0%,#b30000 100%);border:2px solid rgba(255,255,255,0.85);box-shadow:0 3px 10px rgba(179,0,0,0.24);flex-shrink:0;">
+                        <i class="fa-solid fa-drumstick-bite"></i>
+                    </span>
+                @endif
+
+                <span class="brand-title-text">
+                    <span class="brand-name">SISTEMA WEB</span>
+                    <span class="brand-suffix">KROSTY-SADO</span>
+                </span>
+            </p>
             <p class="mb-0 small text-muted">@yield('title', 'Panel CRUD')</p>
         </div>
 

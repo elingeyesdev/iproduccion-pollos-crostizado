@@ -1,0 +1,63 @@
+@extends('layouts.crud')
+
+@section('title', 'Reporte de Productos')
+
+@section('content')
+    <x-crud.page-header title="Reporte de productos" subtitle="Listado completo de productos y su stock actual.">
+        <x-slot:actions>
+            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
+        </x-slot:actions>
+    </x-crud.page-header>
+
+    <div class="card card-elevated mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('reportes.productos') }}" class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <label for="search" class="form-label fw-semibold">Buscar</label>
+                    <input id="search" type="text" name="search" value="{{ $search }}" class="form-control" placeholder="Buscar por nombre">
+                </div>
+                <div class="col-md-6 d-flex gap-2">
+                    <button class="btn btn-app-primary" type="submit"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar</button>
+                    <a href="{{ route('reportes.productos') }}" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card card-elevated">
+        <div class="card-body table-responsive">
+            <table class="table align-middle table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Producto</th>
+                        <th>Tipo</th>
+                        <th class="text-end">Precio</th>
+                        <th class="text-end">Stock actual</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($productos as $producto)
+                        <tr>
+                            <td>{{ $productos->firstItem() + $loop->index }}</td>
+                            <td class="fw-semibold">{{ $producto->nombre }}</td>
+                            <td>{{ $producto->tipoProducto?->nombre ?? '-' }}</td>
+                            <td class="text-end">{{ number_format((float) $producto->precio, 2) }}</td>
+                            <td class="text-end">{{ number_format((float) $producto->cantidad_actual, 2) }}</td>
+                            <td>
+                                <span class="badge rounded-pill {{ (int) $producto->estado === 1 ? 'badge-state' : 'text-bg-secondary' }}">
+                                    {{ (int) $producto->estado === 1 ? 'Activo' : 'Inactivo' }}
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="text-center py-4 text-muted">No hay productos registrados.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-end">{{ $productos->links() }}</div>
+        </div>
+    </div>
+@endsection

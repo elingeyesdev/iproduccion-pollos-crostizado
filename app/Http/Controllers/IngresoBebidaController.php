@@ -34,6 +34,7 @@ class IngresoBebidaController extends Controller
     public function create(): View
     {
         $ingresoBebida = new IngresoBebida();
+        $ingresoBebida->nombre = $this->generarNombreLote();
         $productos      = $this->getProductosBebida();
         $productoRows   = $this->buildProductoRows();
 
@@ -45,8 +46,12 @@ class IngresoBebidaController extends Controller
         $data = $request->validated();
 
         DB::transaction(function () use ($data) {
+            $nombreLote = !empty($data['nombre'])
+                ? $data['nombre']
+                : $this->generarNombreLote();
+
             $ingresoBebida = IngresoBebida::create([
-                'nombre'       => $data['nombre'],
+                'nombre'       => $nombreLote,
                 'descripcion'  => $data['descripcion'] ?? null,
                 'fecha_ingreso' => $data['fecha_ingreso'],
             ]);
@@ -156,5 +161,22 @@ class IngresoBebidaController extends Controller
             'cantidad_ingresa' => $p->pivot->cantidad_ingresa,
             'precio' => $p->pivot->precio,
         ])->values()->all();
+    }
+
+    private function generarNombreLote(): string
+    {
+        $anioMes = now()->format('Y-m');
+        $prefijo = 'LOTE-BEB-' . $anioMes . '-';
+
+        $ultimoMes = IngresoBebida::where('nombre', 'like', $prefijo . '%')
+            ->latest('id')
+            ->first();
+
+        $numero = 1;
+        if ($ultimoMes && preg_match('/-(\d{3})$/', $ultimoMes->nombre, $matches)) {
+            $numero = (int) $matches[1] + 1;
+        }
+
+        return $prefijo . str_pad($numero, 3, '0', STR_PAD_LEFT);
     }
 }

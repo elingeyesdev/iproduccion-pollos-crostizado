@@ -80,30 +80,25 @@ class VentaController extends Controller
             ]);
 
             $productoIds = collect($request->productos)->map(fn ($id) => (int) $id)->all();
-            $productosMap = Producto::query()
-                ->whereIn('id', $productoIds)
-                ->get(['id', 'precio'])
-                ->keyBy('id');
-
-            // Crear detalles
+            
+            // Crear detalles y descontar stock
             foreach ($request->productos as $index => $producto_id) {
-                $producto = $productosMap->get((int) $producto_id);
-
-                if (!$producto) {
-                    throw new \RuntimeException('Producto no encontrado para la venta.');
-                }
+                $producto = Producto::with('ingredientes')->findOrFail((int) $producto_id);
 
                 $precioUnitario = (float) $producto->precio;
-                $cantidad = (float) $request->cantidades[$index];
+                $cantidadVenta = (float) $request->cantidades[$index];
 
                 DetalleVenta::create([
                     'venta_id' => $venta->id,
                     'producto_id' => $producto_id,
                     'precio_unitario' => $precioUnitario,
-                    'cantidad' => $cantidad,
-                    'sub_total' => $precioUnitario * $cantidad,
+                    'cantidad' => $cantidadVenta,
+                    'sub_total' => $precioUnitario * $cantidadVenta,
                     'estado' => 1
                 ]);
+
+                // Lógica de Descuento de Stock Recursiva (Combos)
+                $this->descontarStockProducto($producto, $cantidadVenta);
             }
 
             if ($pagoEfectivo > 0) {
@@ -162,5 +157,26 @@ class VentaController extends Controller
 
         return Redirect::route('ventas.index')
             ->with('success', 'Venta eliminada correctamente.');
+    }
+
+    /**
+     * Descuenta el stock de un producto de forma recursiva si es un combo.
+     */
+    private function descontarStockProducto(Producto $producto, float $cantidadVenta)
+    {
+        if ($producto->ingredientes->count() > 0) {
+            // Es un combo: descontar sus componentes (productos)
+            foreach ($producto->ingredientes as $ingrediente) {
+                $cantidadARestar = $ingrediente->pivot->cantidad * $cantidadVenta;
+                $this->descontarStockProducto($ingrediente, $cantidadARestar);
+            }
+        } else {
+            // Es un producto simple: descontar su propio stock
+            if ($producto->cantidad_actual < $cantidadVenta) {
+                throw new \RuntimeException("Stock insuficiente para: {$producto->nombre}. Disponible: {$producto->cantidad_actual}");
+            }
+            $producto->cantidad_actual -= $cantidadVenta;
+            $producto->save();
+        }
     }
 }

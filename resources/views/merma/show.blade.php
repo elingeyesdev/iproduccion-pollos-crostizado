@@ -19,6 +19,16 @@
                 <dt class="col-sm-3">Cantidad</dt>
                 <dd class="col-sm-9">{{ number_format((float) $merma->cantidad, 2) }}</dd>
 
+                <dt class="col-sm-3">Producto afectado</dt>
+                <dd class="col-sm-9">
+                    @if ($merma->produccion?->producto_afectado)
+                        {{ $merma->produccion->producto_afectado->nombre }}
+                        (stock actual: {{ number_format((float) $merma->produccion->producto_afectado->cantidad_actual, 2) }})
+                    @else
+                        -
+                    @endif
+                </dd>
+
                 <dt class="col-sm-3">Estado</dt>
                 <dd class="col-sm-9">
                     <span class="badge rounded-pill {{ (int) $merma->estado === 1 ? 'badge-state' : 'text-bg-secondary' }}">

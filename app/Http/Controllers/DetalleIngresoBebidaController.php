@@ -8,6 +8,7 @@ use App\Models\IngresoBebida;
 use App\Models\Producto;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -45,7 +46,14 @@ class DetalleIngresoBebidaController extends Controller
 
     public function store(DetalleIngresoBebidaRequest $request): RedirectResponse
     {
-        DetalleIngresoBebida::create($request->validated());
+        $data = $request->validated();
+
+        DB::transaction(function () use ($data) {
+            DetalleIngresoBebida::create($data);
+
+            Producto::where('id', $data['producto_id'])
+                ->increment('cantidad_actual', (float) $data['cantidad_ingresa']);
+        });
 
         return Redirect::route('detalle-ingreso-bebidas.index')
             ->with('success', 'Detalle de ingreso de bebida creado correctamente.');
@@ -68,7 +76,28 @@ class DetalleIngresoBebidaController extends Controller
 
     public function update(DetalleIngresoBebidaRequest $request, DetalleIngresoBebida $detalleIngresoBebida): RedirectResponse
     {
-        $detalleIngresoBebida->update($request->validated());
+        $data = $request->validated();
+
+        DB::transaction(function () use ($data, $detalleIngresoBebida) {
+            $productoAnteriorId = $detalleIngresoBebida->producto_id;
+            $cantidadAnterior   = (float) $detalleIngresoBebida->cantidad_ingresa;
+
+            $detalleIngresoBebida->update($data);
+
+            if ($productoAnteriorId === (int) $data['producto_id']) {
+                $diferencia = (float) $data['cantidad_ingresa'] - $cantidadAnterior;
+                if ($diferencia !== 0.0) {
+                    Producto::where('id', $productoAnteriorId)
+                        ->increment('cantidad_actual', $diferencia);
+                }
+            } else {
+                Producto::where('id', $productoAnteriorId)
+                    ->decrement('cantidad_actual', $cantidadAnterior);
+
+                Producto::where('id', $data['producto_id'])
+                    ->increment('cantidad_actual', (float) $data['cantidad_ingresa']);
+            }
+        });
 
         return Redirect::route('detalle-ingreso-bebidas.index')
             ->with('success', 'Detalle de ingreso de bebida actualizado correctamente.');
@@ -76,7 +105,12 @@ class DetalleIngresoBebidaController extends Controller
 
     public function destroy(DetalleIngresoBebida $detalleIngresoBebida): RedirectResponse
     {
-        $detalleIngresoBebida->update(['estado' => 0]);
+        DB::transaction(function () use ($detalleIngresoBebida) {
+            Producto::where('id', $detalleIngresoBebida->producto_id)
+                ->decrement('cantidad_actual', (float) $detalleIngresoBebida->cantidad_ingresa);
+
+            $detalleIngresoBebida->update(['estado' => 0]);
+        });
 
         return Redirect::route('detalle-ingreso-bebidas.index')
             ->with('success', 'Detalle de ingreso de bebida eliminado correctamente.');

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProduccionRequest;
-use App\Models\Produccion;
+use App\Models\Insumo;
 use App\Models\OrdenProduccion;
+use App\Models\OrdenProduccionInsumo;
+use App\Models\Produccion;
+use App\Models\Producto;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,132 +15,161 @@ use Illuminate\View\View;
 
 class ProduccionController extends Controller
 {
+    public function loteCreate(OrdenProduccion $ordenProduccion): View
+    {
+        $ordenProduccion->loadMissing([
+            'reglaConversion.insumo',
+            'reglaConversion.producto',
+            'reglaConversion.recetaConversiones.insumo',
+            'reglaConversion.recetaConversiones.unidadMedida',
+        ]);
+
+        $regla = $ordenProduccion->reglaConversion;
+        $producto = $regla?->resolverProducto();
+
+        $detalles = OrdenProduccionInsumo::query()
+            ->where('orden_produccion_id', $ordenProduccion->id)
+            ->where('estado', 1)
+            ->whereDoesntHave('produccion')
+            ->with('insumo.unidadMedida')
+            ->orderBy('id')
+            ->get();
+
+        $detallePrincipal = $detalles->firstWhere('insumo_id', $regla?->insumo_id) ?? $detalles->first();
+        $cantidadPlanificada = (float) ($detallePrincipal?->cantidad ?? 0);
+        $rangoRendimiento = $regla?->rangoRendimiento($cantidadPlanificada) ?? ['minimo' => 0, 'maximo' => 0];
+        $loteEjecutable = (bool) $regla && (bool) $producto && $detalles->isNotEmpty();
+
+        return view('produccion.lote-create', compact('ordenProduccion', 'detalles', 'regla', 'producto', 'cantidadPlanificada', 'rangoRendimiento', 'loteEjecutable'));
+    }
+
+    public function loteStore(Request $request, OrdenProduccion $ordenProduccion): RedirectResponse
+    {
+        $data = $request->validate([
+            'cantidad_obtenida' => 'required|numeric|min:0.01',
+        ]);
+
+        $cantidadObtenida = (float) $data['cantidad_obtenida'];
+
+        $regla = $ordenProduccion->reglaConversion;
+
+        if (!$regla) {
+            return Redirect::back()
+                ->withErrors(['cantidad_obtenida' => 'Esta orden no tiene una receta (regla de conversión) asignada.']);
+        }
+
+        $producto = $regla->resolverProducto();
+
+        if (!$producto) {
+            return Redirect::back()
+                ->withErrors(['cantidad_obtenida' => 'No se pudo determinar el producto resultante de la receta asignada.']);
+        }
+
+        $detalles = OrdenProduccionInsumo::query()
+            ->where('orden_produccion_id', $ordenProduccion->id)
+            ->where('estado', 1)
+            ->whereDoesntHave('produccion')
+            ->with('insumo')
+            ->orderBy('id')
+            ->get();
+
+        if ($detalles->isEmpty()) {
+            return Redirect::back()
+                ->withErrors(['cantidad_obtenida' => 'Esta orden no tiene insumos pendientes de producción.']);
+        }
+
+        $detallePrincipal = $detalles->firstWhere('insumo_id', $regla->insumo_id) ?? $detalles->first();
+        $cantidadPlanificada = (float) ($detallePrincipal?->cantidad ?? 0);
+
+        if (!$regla->aceptaCantidadObtenida($cantidadObtenida, $cantidadPlanificada)) {
+            return Redirect::back()
+                ->withInput()
+                ->withErrors(['cantidad_obtenida' => $regla->mensajeRendimiento($cantidadObtenida, $cantidadPlanificada)]);
+        }
+
+        try {
+            DB::transaction(function () use ($detalles, $cantidadObtenida, $ordenProduccion, $regla, $producto) {
+                foreach ($detalles as $detalle) {
+                    Produccion::create([
+                        'orden_produccion_insumo_id' => $detalle->id,
+                        'regla_conversion_id' => $regla->id,
+                        'producto_id' => $producto->id,
+                        'cantidad_insumo' => (float) $detalle->cantidad,
+                        'cantidad_obtenida' => $cantidadObtenida,
+                        'nivel' => 0,
+                        'estado' => 1,
+                    ]);
+
+                    $this->descontarStockInsumo($detalle);
+                }
+
+                Producto::whereKey($producto->id)->increment('cantidad_actual', (int) round($cantidadObtenida));
+            });
+        } catch (\RuntimeException $e) {
+            return Redirect::back()
+                ->withErrors(['cantidad_obtenida' => $e->getMessage()]);
+        }
+
+        return Redirect::route('orden-producciones.show', $ordenProduccion)
+            ->with('success', 'Producción ejecutada correctamente. Se descontaron ' . count($detalles) . ' insumo(s) y se generaron ' . number_format($cantidadObtenida, 2) . ' unidades de ' . $producto->nombre . '.');
+    }
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->input('search'));
 
-        $producciones = Produccion::query()
-            ->with(['ordenProduccion:id,numero_orden,fecha_programada', 'insumos'])
-            ->where('estado', 1)
+        $ordenesPendientes = OrdenProduccion::query()
+            ->with('reglaConversion.producto')
+            ->withCount(['insumos as insumos_pendientes_count' => function ($query) {
+                $query->where('estado', 1)->whereDoesntHave('produccion');
+            }])
+            ->having('insumos_pendientes_count', '>', 0)
             ->when($search, function ($query) use ($search) {
-                $query->whereHas('ordenProduccion', function ($q) use ($search) {
-                    $q->where('numero_orden', 'like', "%{$search}%");
-                });
+                $query->where('numero_orden', 'like', "%{$search}%");
             })
-            ->orderByDesc('created_at')
-            ->paginate(10)
+            ->orderByDesc('fecha_programada')
+            ->paginate(10, ['*'], 'pendientes')
             ->withQueryString();
 
-        return view('produccion.index', compact('producciones', 'search'));
+        $producciones = Produccion::query()
+            ->conDetalleOrden()
+            ->where('estado', 1)
+            ->orderByDesc('id')
+            ->paginate(10, ['*'], 'historial');
+
+        return view('produccion.index', compact('ordenesPendientes', 'producciones', 'search'));
     }
 
-    public function create(): View
+    public function show(Produccion $produccion): View
     {
-        $produccion = new Produccion();
-        $ordenProducciones = OrdenProduccion::where('estado', 1)->orderByDesc('fecha_programada')->get();
+        $relations = [
+            'reglaConversion.insumo.unidadMedida',
+            'reglaConversion.unidadEntrada',
+            'reglaConversion.unidadSalida',
+            'reglaConversion.producto',
+            'producto',
+            'ordenProduccion.insumos.insumo.unidadMedida',
+            'ordenProduccionInsumo.insumo.unidadMedida',
+            'mermas',
+        ];
 
-        return view('produccion.create', compact('produccion', 'ordenProducciones'));
+        $produccion->loadMissing($relations);
+
+        return view('produccion.show', compact('produccion'));
     }
 
-    public function store(ProduccionRequest $request): RedirectResponse
+    private function descontarStockInsumo(OrdenProduccionInsumo $detalle): void
     {
-        $data = $request->validated();
+        $insumo = Insumo::whereKey($detalle->insumo_id)->lockForUpdate()->firstOrFail();
 
-        DB::transaction(function () use ($data) {
-            $ordenProduccion = OrdenProduccion::with(['insumos.insumo'])->findOrFail($data['orden_produccion_id']);
+        $cantidadConsumida = round((float) $detalle->cantidad, 2);
 
-            $produccion = Produccion::create([
-                'orden_produccion_id' => $ordenProduccion->id,
-                'cantidad_insumo' => $data['cantidad_insumo'],
-                'cantidad_obtenida' => $data['cantidad_obtenida'],
-                'estado' => 1,
-            ]);
+        if ((float) $insumo->stock_actual < $cantidadConsumida) {
+            throw new \RuntimeException(
+                "Stock insuficiente para el insumo \"{$insumo->nombre}\". Disponible: {$insumo->stock_actual}, requerido: {$cantidadConsumida}."
+            );
+        }
 
-            foreach ($ordenProduccion->insumos as $detalleOrden) {
-                $insumo = $detalleOrden->insumo;
-                $cantidadADescontar = (float) $detalleOrden->cantidad;
-
-                if ((float) $insumo->stock_actual < $cantidadADescontar) {
-                    throw new \RuntimeException("Stock insuficiente para el insumo: {$insumo->nombre}");
-                }
-
-                $insumo->stock_actual = (float) $insumo->stock_actual - $cantidadADescontar;
-                $insumo->save();
-
-                $produccion->insumos()->attach($insumo->id, [
-                    'cantidad' => $cantidadADescontar,
-                    'estado' => 1,
-                ]);
-            }
-        });
-
-            return Redirect::route('producciones.index')
-                ->with('success', 'Producción confirmada. Inventario descontado y stock de productos actualizado.');
-    }
-
-    public function show(Produccion $produccione): View
-    {
-        $produccione->load(['ordenProduccion', 'insumos', 'mermas']);
-        return view('produccion.show', compact('produccione'));
-    }
-
-    public function edit(Produccion $produccione): View
-    {
-        $ordenProducciones = OrdenProduccion::where('estado', 1)->orderByDesc('fecha_programada')->get();
-
-        return view('produccion.edit', compact('produccione', 'ordenProducciones'));
-    }
-
-    public function update(ProduccionRequest $request, Produccion $produccione): RedirectResponse
-    {
-        $data = $request->validated();
-
-        DB::transaction(function () use ($data, $produccione) {
-            $produccione->loadMissing(['insumos']);
-
-            foreach ($produccione->insumos as $insumoActual) {
-                $insumoActual->stock_actual = (float) $insumoActual->stock_actual + (float) $insumoActual->pivot->cantidad;
-                $insumoActual->save();
-            }
-
-            $produccione->insumos()->detach();
-
-            $ordenProduccion = OrdenProduccion::with(['insumos.insumo'])->findOrFail($data['orden_produccion_id']);
-
-            $produccione->update([
-                'orden_produccion_id' => $ordenProduccion->id,
-                'cantidad_insumo' => $data['cantidad_insumo'],
-                'cantidad_obtenida' => $data['cantidad_obtenida'],
-                'estado' => 1,
-            ]);
-
-            foreach ($ordenProduccion->insumos as $detalleOrden) {
-                $insumo = $detalleOrden->insumo;
-                $cantidadADescontar = (float) $detalleOrden->cantidad;
-
-                if ((float) $insumo->stock_actual < $cantidadADescontar) {
-                    throw new \RuntimeException("Stock insuficiente para el insumo: {$insumo->nombre}");
-                }
-
-                $insumo->stock_actual = (float) $insumo->stock_actual - $cantidadADescontar;
-                $insumo->save();
-
-                $produccione->insumos()->attach($insumo->id, [
-                    'cantidad' => $cantidadADescontar,
-                    'estado' => 1,
-                ]);
-            }
-        });
-
-        return Redirect::route('producciones.index')
-            ->with('success', 'Producción actualizada correctamente.');
-    }
-
-    public function destroy(Produccion $produccione): RedirectResponse
-    {
-        $produccione->update(['estado' => 0]);
-
-        return Redirect::route('producciones.index')
-            ->with('success', 'Producción eliminada correctamente.');
+        $insumo->decrement('stock_actual', $cantidadConsumida);
     }
 }

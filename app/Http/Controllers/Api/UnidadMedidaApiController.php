@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UnidadMedidaRequest;
 use App\Models\UnidadMedida;
-use Illuminate\Http\Request;
 
 class UnidadMedidaApiController extends Controller
 {
@@ -13,9 +13,9 @@ class UnidadMedidaApiController extends Controller
         return response()->json(UnidadMedida::where('estado', 1)->get());
     }
 
-    public function store(Request $request)
+    public function store(UnidadMedidaRequest $request)
     {
-        $unidadMedida = UnidadMedida::create($request->all());
+        $unidadMedida = UnidadMedida::create($request->validated());
 
         return response()->json($unidadMedida, 201);
     }
@@ -27,10 +27,10 @@ class UnidadMedidaApiController extends Controller
         return response()->json($unidadMedida);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UnidadMedidaRequest $request, string $id)
     {
         $unidadMedida = UnidadMedida::where('estado', 1)->findOrFail($id);
-        $unidadMedida->update($request->all());
+        $unidadMedida->update($request->validated());
 
         return response()->json($unidadMedida);
     }

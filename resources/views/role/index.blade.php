@@ -6,7 +6,7 @@
     <x-crud.page-header title="Administrar Roles" subtitle="Administra los roles del sistema.">
         <x-slot:actions>
             <a href="{{ route('roles.create') }}" class="btn btn-app-primary">
-                <i class="fa-solid fa-plus me-1"></i> Nuevo rol
+                <i class="fa-solid fa-plus me-1"></i> Crear rol
             </a>
         </x-slot:actions>
     </x-crud.page-header>

@@ -18,7 +18,7 @@ class ProduccionProductoController extends Controller
         $search = trim((string) $request->input('search'));
 
         $produccionProductos = ProduccionProducto::query()
-            ->with(['produccion:id,orden_produccion_id', 'producto:id,nombre'])
+            ->with(['produccion:id,orden_produccion_insumo_id', 'producto:id,nombre'])
             ->where('estado', 1)
             ->when($search, function ($query) use ($search) {
                 $query->whereHas('producto', function ($q) use ($search) {

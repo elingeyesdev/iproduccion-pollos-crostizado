@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Mermas" subtitle="Control de mermas por producción.">
         <x-slot:actions>
-            <a href="{{ route('mermas.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nueva merma</a>
+            <a href="{{ route('mermas.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear merma</a>
         </x-slot:actions>
     </x-crud.page-header>
 
@@ -31,6 +31,7 @@
                     <tr>
                         <th>#</th>
                         <th>Producción</th>
+                        <th>Producto afectado</th>
                         <th>Cantidad</th>
                         <th>Estado</th>
                         <th class="text-end">Acciones</th>
@@ -41,6 +42,7 @@
                         <tr>
                             <td>{{ $mermas->firstItem() + $loop->index }}</td>
                             <td class="fw-semibold">{{ $merma->produccion?->ordenProduccion?->numero_orden ?? ('Producción #' . $merma->produccion_id) }}</td>
+                            <td>{{ $merma->produccion?->producto_afectado?->nombre ?? '-' }}</td>
                             <td>{{ number_format((float) $merma->cantidad, 2) }}</td>
                             <td>
                                 <span class="badge rounded-pill {{ (int) $merma->estado === 1 ? 'badge-state' : 'text-bg-secondary' }}">
@@ -66,7 +68,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center py-4 text-muted">No hay mermas registradas.</td></tr>
+                        <tr><td colspan="6" class="text-center py-4 text-muted">No hay mermas registradas.</td></tr>
                     @endforelse
                 </tbody>
             </table>

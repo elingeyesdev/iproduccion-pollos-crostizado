@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Ventas" subtitle="Listado de ventas realizadas.">
         <x-slot:actions>
-            <a href="{{ route('ventas.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nueva venta</a>
+            <a href="{{ route('ventas.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear venta</a>
         </x-slot:actions>
     </x-crud.page-header>
 

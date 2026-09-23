@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Productos" subtitle="Catálogo de productos.">
         <x-slot:actions>
-            <a href="{{ route('productos.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nuevo producto</a>
+            <a href="{{ route('productos.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear producto</a>
         </x-slot:actions>
     </x-crud.page-header>
 
@@ -43,7 +43,7 @@
                         <tr>
                             <td>{{ $productos->firstItem() + $loop->index }}</td>
                             <td class="fw-semibold">{{ $producto->nombre }}</td>
-                            <td>S/ {{ number_format((float) $producto->precio, 2) }}</td>
+                            <td>Bs {{ number_format((float) $producto->precio, 2) }}</td>
                             <td>{{ $producto->tipoProducto?->nombre ?? '-' }}</td>
                             <td>{{ (int) $producto->cantidad_actual }}</td>
                             <td>

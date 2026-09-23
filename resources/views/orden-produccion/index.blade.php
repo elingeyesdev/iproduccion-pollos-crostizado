@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Órdenes de producción" subtitle="Programación de lotes de producción.">
         <x-slot:actions>
-            <a href="{{ route('orden-producciones.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nueva orden</a>
+            <a href="{{ route('orden-producciones.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear orden</a>
         </x-slot:actions>
     </x-crud.page-header>
 
@@ -32,8 +32,9 @@
                         <th>#</th>
                         <th>Número de orden</th>
                         <th>Fecha programada</th>
-                        <th>Insumos</th>
+                        <th>Insumos planificados</th>
                         <th>Estado</th>
+                        <th>Producción</th>
                         <th class="text-end">Acciones</th>
                     </tr>
                 </thead>
@@ -43,17 +44,24 @@
                             <td>{{ $ordenProducciones->firstItem() + $loop->index }}</td>
                             <td class="fw-semibold">{{ $ordenProduccion->numero_orden }}</td>
                             <td>{{ $ordenProduccion->fecha_programada ? \Illuminate\Support\Carbon::parse($ordenProduccion->fecha_programada)->format('d/m/Y') : '-' }}</td>
-                            <td>{{ $ordenProduccion->insumos_count ?? 0 }} insumos</td>
+                            <td>{{ (int) ($ordenProduccion->insumos_count ?? 0) }}</td>
                             <td>
                                 <span class="badge rounded-pill {{ (int) $ordenProduccion->estado === 1 ? 'badge-state' : 'text-bg-secondary' }}">
                                     {{ (int) $ordenProduccion->estado === 1 ? 'Activo' : 'Inactivo' }}
                                 </span>
                             </td>
                             <td>
+                                @if ((int) ($ordenProduccion->insumos_pendientes_count ?? 0) > 0)
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                @else
+                                    <span class="badge bg-success">Ejecutada</span>
+                                @endif
+                            </td>
+                            <td>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a href="{{ route('orden-producciones.show', ['orden_produccione' => $ordenProduccion->id]) }}" class="btn btn-sm btn-light border"><i class="fa-solid fa-eye me-1"></i> Ver</a>
-                                    <a href="{{ route('orden-producciones.edit', ['orden_produccione' => $ordenProduccion->id]) }}" class="btn btn-sm btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
-                                    <form id="delete-form-orden-produccion-{{ $ordenProduccion->id }}" action="{{ route('orden-producciones.destroy', ['orden_produccione' => $ordenProduccion->id]) }}" method="POST">
+                                    <a href="{{ route('orden-producciones.show', $ordenProduccion) }}" class="btn btn-sm btn-light border"><i class="fa-solid fa-eye me-1"></i> Ver</a>
+                                    <a href="{{ route('orden-producciones.edit', $ordenProduccion) }}" class="btn btn-sm btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
+                                    <form id="delete-form-orden-produccion-{{ $ordenProduccion->id }}" action="{{ route('orden-producciones.destroy', $ordenProduccion) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteOrdenProduccionModal{{ $ordenProduccion->id }}"><i class="fa-solid fa-trash me-1"></i> Eliminar</button>
@@ -68,7 +76,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-4 text-muted">No hay órdenes registradas.</td></tr>
+                        <tr><td colspan="7" class="text-center py-4 text-muted">No hay órdenes registradas.</td></tr>
                     @endforelse
                 </tbody>
             </table>

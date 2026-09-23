@@ -11,7 +11,10 @@
 
 <div class="row g-3">
     <div class="col-md-6">
-        <x-crud.form-input name="numero_orden" label="Número de orden" :value="$ordenProduccion->numero_orden" placeholder="Ejemplo: OP-2026-001" required />
+        <x-crud.form-input name="numero_orden" label="N° Orden de Producción" :value="$ordenProduccion->numero_orden" placeholder="Ejemplo: OR-PRO-2026-08-0001" />
+        @if (!$ordenProduccion->exists)
+            <small class="text-muted d-block mt-1"><i class="fa-solid fa-wand-magic-sparkles me-1"></i>Número generado automáticamente. Puedes modificarlo si lo deseas.</small>
+        @endif
     </div>
 
     <div class="col-md-6">
@@ -22,6 +25,31 @@
         @error('fecha_programada')
             <div class="invalid-feedback d-block">{{ $message }}</div>
         @enderror
+    </div>
+
+    <div class="col-12">
+        <label for="regla_conversion_id" class="form-label fw-semibold">Receta / Regla de conversión</label>
+        <select id="regla_conversion_id" name="regla_conversion_id" class="form-select @error('regla_conversion_id') is-invalid @enderror" required>
+            <option value="">Selecciona la receta que se producirá con esta orden</option>
+            @foreach ($reglas as $regla)
+                <option
+                    value="{{ $regla->id }}"
+                    data-insumo-id="{{ (int) ($regla->insumo_id ?? 0) }}"
+                    data-detalle-insumo-ids="{{ $regla->recetaConversiones->pluck('insumo_id')->implode(',') }}"
+                    @selected((string) old('regla_conversion_id', $ordenProduccion->regla_conversion_id) === (string) $regla->id)
+                >
+                    {{ $regla->insumo?->nombre }}
+                    @if ($regla->recetaConversiones->isNotEmpty())
+                        + {{ $regla->recetaConversiones->map(fn ($d) => $d->insumo?->nombre)->filter()->implode(', ') }}
+                    @endif
+                    &rarr; {{ $regla->producto?->nombre ?? $regla->producto_resultante }}
+                </option>
+            @endforeach
+        </select>
+        @error('regla_conversion_id')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+        @enderror
+        <small class="text-muted d-block mt-1">Al seleccionar una receta se sugieren automáticamente sus insumos; ajustá las cantidades según lo que vas a producir.</small>
     </div>
 
     <div class="col-12">
@@ -90,6 +118,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const tableBody = document.querySelector('#insumoTable tbody');
         const addButton = document.getElementById('addInsumoRow');
+        const reglaSelect = document.getElementById('regla_conversion_id');
 
         if (!tableBody || !addButton) return;
 
@@ -101,13 +130,41 @@
             });
         }
 
-        addButton.addEventListener('click', function () {
+        function addRow(insumoId) {
             const template = tableBody.querySelector('tr').cloneNode(true);
             template.querySelectorAll('input').forEach((input) => input.value = '');
-            template.querySelectorAll('select').forEach((select) => select.value = '');
+            template.querySelectorAll('select').forEach((select) => select.value = insumoId ? String(insumoId) : '');
             tableBody.appendChild(template);
             renumberRows();
+        }
+
+        addButton.addEventListener('click', function () {
+            addRow(null);
         });
+
+        if (reglaSelect) {
+            reglaSelect.addEventListener('change', function () {
+                const option = reglaSelect.selectedOptions[0];
+                if (!option || !option.value) return;
+
+                const yaHayInsumosCargados = Array.from(tableBody.querySelectorAll('select'))
+                    .some((select) => select.value);
+
+                if (yaHayInsumosCargados) return;
+
+                const insumoPrincipalId = option.dataset.insumoId;
+                const detalleIds = (option.dataset.detalleInsumoIds || '')
+                    .split(',')
+                    .map((id) => id.trim())
+                    .filter(Boolean);
+
+                if (insumoPrincipalId && insumoPrincipalId !== '0') {
+                    tableBody.querySelector('select').value = insumoPrincipalId;
+                }
+
+                detalleIds.forEach((id) => addRow(id));
+            });
+        }
 
         tableBody.addEventListener('click', function (event) {
             const button = event.target.closest('.removeInsumoRow');

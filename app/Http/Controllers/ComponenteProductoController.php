@@ -2,30 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ComponenteProductoRequest;
 use App\Models\ComponenteProducto;
 use App\Models\Producto;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Redirect;
+
 
 class ComponenteProductoController extends Controller
+
 {
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->input('search'));
-
         $componenteProductos = ComponenteProducto::query()
             ->where('estado', 1)
             ->when($search, function ($query) use ($search) {
                 $query->where('nombre', 'like', "%{$search}%");
             })
-            ->orderBy('nombre')
-            ->paginate(10)
-            ->withQueryString();
+            ->paginate(10);
 
         return view('componente-producto.index', compact('componenteProductos', 'search'));
     }
@@ -36,12 +34,11 @@ class ComponenteProductoController extends Controller
         return view('componente-producto.create', compact('componenteProducto'));
     }
 
-    public function store(ComponenteProductoRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        ComponenteProducto::create($request->validated());
-
-        return Redirect::route('componente-productos.index')
-            ->with('success', 'Componente de producto creado correctamente.');
+        $request->validate(['nombre' => 'required|string|max:255', 'equivalencia' => 'nullable|string']);
+        ComponenteProducto::create($request->all());
+        return Redirect::route('componente-productos.index')->with('success', 'Componente creado correctamente.');
     }
 
     public function show(ComponenteProducto $componenteProducto): View
@@ -54,112 +51,80 @@ class ComponenteProductoController extends Controller
         return view('componente-producto.edit', compact('componenteProducto'));
     }
 
-    public function update(ComponenteProductoRequest $request, ComponenteProducto $componenteProducto): RedirectResponse
+    public function update(Request $request, ComponenteProducto $componenteProducto): RedirectResponse
     {
-        $componenteProducto->update($request->validated());
-
-        return Redirect::route('componente-productos.index')
-            ->with('success', 'Componente de producto actualizado correctamente.');
+        $request->validate(['nombre' => 'required|string|max:255', 'equivalencia' => 'nullable|string']);
+        $componenteProducto->update($request->all());
+        return Redirect::route('componente-productos.index')->with('success', 'Componente actualizado correctamente.');
     }
 
     public function destroy(ComponenteProducto $componenteProducto): RedirectResponse
     {
         $componenteProducto->update(['estado' => 0]);
-
-        return Redirect::route('componente-productos.index')
-            ->with('success', 'Componente de producto eliminado correctamente.');
+        return Redirect::route('componente-productos.index')->with('success', 'Componente eliminado correctamente.');
     }
 
+    /**
+     * NUEVAS FUNCIONALIDADES: Gestión de Composición (Combos de Productos)
+     */
     public function composiciones(Request $request): View
     {
         $search = trim((string) $request->input('search'));
-
+        
         $productos = Producto::query()
-            ->with(['tipoProducto:id,nombre', 'componentes' => fn ($query) => $query->where('estado', 1)])
+            ->with(['ingredientes', 'tipoProducto'])
             ->where('estado', 1)
             ->when($search, function ($query) use ($search) {
-                $query->where('nombre', 'like', "%{$search}%")
-                    ->orWhereHas('tipoProducto', function ($q) use ($search) {
-                        $q->where('nombre', 'like', "%{$search}%");
-                    });
+                $query->where('nombre', 'like', "%{$search}%");
             })
             ->orderBy('nombre')
-            ->paginate(10)
-            ->withQueryString();
+            ->paginate(10);
 
-        return view('componente-producto.composiciones-index', compact('productos', 'search'));
+        return view('componente-producto.composiciones', compact('productos', 'search'));
     }
 
     public function editComposicion(Producto $producto): View
     {
-        $producto->load(['tipoProducto:id,nombre', 'componentes' => function ($query) {
-            $query->where('estado', 1)->orderBy('nombre');
-        }]);
-
-        $componentesDisponibles = ComponenteProducto::query()
-            ->where('estado', 1)
+        $producto->load('ingredientes');
+        $todosLosProductos = Producto::where('estado', 1)
+            ->where('id', '!=', $producto->id)
             ->orderBy('nombre')
             ->get();
 
-        $componentRows = old('componentes', $producto->componentes->map(function ($componente) {
-            return [
-                'componente_producto_id' => $componente->id,
-                'cantidad' => $componente->pivot->cantidad,
-            ];
-        })->values()->all());
-
-        if (empty($componentRows)) {
-            $componentRows = [[
-                'componente_producto_id' => '',
-                'cantidad' => '',
-            ]];
-        }
-
-        return view('componente-producto.composicion-edit', compact('producto', 'componentesDisponibles', 'componentRows'));
+        return view('componente-producto.edit_composicion', compact('producto', 'todosLosProductos'));
     }
 
     public function updateComposicion(Request $request, Producto $producto): RedirectResponse
     {
-        $data = $request->validate([
-            'componentes' => ['required', 'array', 'min:1'],
-            'componentes.*.componente_producto_id' => [
-                'required',
-                'integer',
-                Rule::exists('componente_productos', 'id')->where(fn ($query) => $query->where('estado', 1)),
-            ],
-            'componentes.*.cantidad' => ['required', 'numeric', 'min:0.01'],
+        $request->validate([
+            'ingredientes' => 'nullable|array',
+            'ingredientes.*.id' => 'required|exists:productos,id',
+            'ingredientes.*.cantidad' => 'required|numeric|min:0.01',
         ]);
 
-        $componentes = collect($data['componentes'])
-            ->filter(fn ($row) => filled($row['componente_producto_id'] ?? null) && filled($row['cantidad'] ?? null))
-            ->values();
+        try {
+            DB::beginTransaction();
 
-        if ($componentes->isEmpty()) {
-            return Redirect::back()
-                ->withInput()
-                ->withErrors(['componentes' => 'Debes registrar al menos un componente para la composición.']);
+            DB::table('composicion_productos')
+                ->where('producto_padre_id', $producto->id)
+                ->update(['estado' => 0]);
+
+            if ($request->has('ingredientes')) {
+                foreach ($request->ingredientes as $ingrediente) {
+                    DB::table('composicion_productos')->updateOrInsert(
+                        ['producto_padre_id' => $producto->id, 'producto_hijo_id' => $ingrediente['id']],
+                        ['cantidad' => $ingrediente['cantidad'], 'estado' => 1, 'updated_at' => now(), 'created_at' => now()]
+                    );
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('componente-productos.composiciones')
+                ->with('success', "Composición de '{$producto->nombre}' actualizada correctamente.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Error al actualizar composición: ' . $e->getMessage()]);
         }
-
-        if ($componentes->pluck('componente_producto_id')->duplicates()->isNotEmpty()) {
-            return Redirect::back()
-                ->withInput()
-                ->withErrors(['componentes' => 'No repitas el mismo componente en la composición.']);
-        }
-
-        $syncData = $componentes->mapWithKeys(function ($row) {
-            return [
-                (int) $row['componente_producto_id'] => [
-                    'cantidad' => (float) $row['cantidad'],
-                    'estado' => 1,
-                ],
-            ];
-        })->all();
-
-        DB::transaction(function () use ($producto, $syncData) {
-            $producto->componentes()->sync($syncData);
-        });
-
-        return Redirect::route('componente-productos.composiciones')
-            ->with('success', 'Composición del producto actualizada correctamente.');
     }
 }

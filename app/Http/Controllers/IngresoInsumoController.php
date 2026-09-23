@@ -57,7 +57,7 @@ class IngresoInsumoController extends Controller
                 ]);
 
                 Insumo::where('id', $detalle['insumo_id'])
-                    ->increment('stock_actual', (int) $detalle['cantidad']);
+                    ->increment('stock_actual', (float) $detalle['cantidad']);
             }
         });
 
@@ -88,7 +88,7 @@ class IngresoInsumoController extends Controller
         DB::transaction(function () use ($data, $ingresoInsumo) {
             foreach ($ingresoInsumo->detalles as $detalle) {
                 Insumo::where('id', $detalle->insumo_id)
-                    ->decrement('stock_actual', (int) $detalle->cantidad);
+                    ->decrement('stock_actual', (float) $detalle->cantidad);
             }
 
             $ingresoInsumo->update([
@@ -106,7 +106,7 @@ class IngresoInsumoController extends Controller
                 ]);
 
                 Insumo::where('id', $detalle['insumo_id'])
-                    ->increment('stock_actual', (int) $detalle['cantidad']);
+                    ->increment('stock_actual', (float) $detalle['cantidad']);
             }
         });
 
@@ -119,7 +119,7 @@ class IngresoInsumoController extends Controller
         DB::transaction(function () use ($ingresoInsumo) {
             foreach ($ingresoInsumo->detalles as $detalle) {
                 Insumo::where('id', $detalle->insumo_id)
-                    ->decrement('stock_actual', (int) $detalle->cantidad);
+                    ->decrement('stock_actual', (float) $detalle->cantidad);
             }
 
             $ingresoInsumo->update(['estado' => 0]);

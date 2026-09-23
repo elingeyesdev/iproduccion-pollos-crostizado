@@ -3,46 +3,60 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class UsuarioController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
-        return response()->json([
-            User::where('estado', 1)->get()
-        ]);
+        $usuarios = User::query()
+            ->where('estado', 1)
+            ->with('roles')
+            ->get();
+
+        return response()->json($usuarios);
     }
 
-    public function store(Request $request)
+    public function store(UserRequest $request): JsonResponse
     {
-        $usuario = User::create($request->all());
+        $usuario = User::createWithRoles($request->validated());
 
-        return response()->json($usuario, 201);
+        return response()->json($usuario->fresh(['roles']), 201);
     }
 
-    public function show(string $id)
+    public function show(string $id): JsonResponse
     {
-        $usuario = User::where('estado', 1)->findOrFail($id);
-
-        return response()->json($usuario);
-      
-    }
-
-    public function update(Request $request, string $id)
-    {
-        $usuario = User::where('estado', 1)->findOrFail($id);
-        $usuario->update($request->all());
+        $usuario = User::query()
+            ->where('estado', 1)
+            ->with('roles')
+            ->findOrFail($id);
 
         return response()->json($usuario);
     }
 
-    public function destroy(string $id)
+    public function update(UserRequest $request, string $id): JsonResponse
     {
-        $usuario = User::where('estado', 1)->findOrFail($id);
+        $usuario = User::query()
+            ->where('estado', 1)
+            ->findOrFail($id);
+
+        $usuario->updateWithRoles($request->validated());
+
+        return response()->json($usuario->fresh(['roles']));
+    }
+
+    public function destroy(string $id): JsonResponse
+    {
+        $usuario = User::query()
+            ->where('estado', 1)
+            ->findOrFail($id);
+
         $usuario->update(['estado' => 0]);
 
-        return response()->json(null, 204);
+        return response()->json([
+            'message' => 'Usuario eliminado',
+        ]);
     }
 }

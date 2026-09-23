@@ -9,8 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
+
+
 class ClienteController extends Controller
 {
+    
     public function index(Request $request): View
     {
         $search = trim((string) $request->input('search'));

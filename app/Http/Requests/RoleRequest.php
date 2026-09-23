@@ -24,6 +24,8 @@ class RoleRequest extends FormRequest
         return [
 			'name' => 'required|string|max:100',
 			'guard_name' => 'required|string|in:web,api',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|exists:permissions,name',
         ];
     }
 
@@ -32,6 +34,7 @@ class RoleRequest extends FormRequest
         return [
             'name' => 'nombre del rol',
             'guard_name' => 'guard',
+            'permissions' => 'permisos',
         ];
     }
 

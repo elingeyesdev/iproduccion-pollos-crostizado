@@ -8,6 +8,19 @@
     <div class="card card-elevated mb-4">
         <div class="card-body">
             <h5 class="section-title mb-3">Datos del usuario autenticado</h5>
+            <div class="alert alert-info mb-3" role="status">
+                <strong>Control de perfil</strong>
+                <div class="row mt-2 g-2">
+                    <div class="col-12 col-md-6">
+                        <span class="d-block fw-semibold">Perfil que puedes editar</span>
+                        <span>Tu propio perfil: {{ $user->name }}.</span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <span class="d-block fw-semibold">Perfiles que no puedes modificar</span>
+                        <span>Los perfiles de otros usuarios, sus roles y sus permisos.</span>
+                    </div>
+                </div>
+            </div>
             <div class="row g-3">
                 <div class="col-12 col-md-6">
                     <div class="border rounded-3 p-3 bg-light">

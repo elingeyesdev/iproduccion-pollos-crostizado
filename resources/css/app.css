@@ -20,7 +20,7 @@ body.app-body {
 .app-sidebar {
 	width: var(--sidebar-width);
 	background: var(--sidebar-bg);
-	border-right: 1px solid #dee2e6;
+	border-right: 1px solid #e4e0e0;
 	position: sticky;
 	top: 0;
 	height: 100vh;
@@ -34,7 +34,7 @@ body.app-body {
 
 .app-sidebar .nav-link:hover,
 .app-sidebar .nav-link.active {
-	background: #e9ecef;
+	background: #fdfcfc;
 	color: #212529;
 }
 

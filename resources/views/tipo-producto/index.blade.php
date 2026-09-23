@@ -6,7 +6,7 @@
     <x-crud.page-header title="Tipos de producto" subtitle="Clasifica los productos por categoria para su gestion.">
         <x-slot:actions>
             <a href="{{ route('tipo-productos.create') }}" class="btn btn-app-primary">
-                <i class="fa-solid fa-plus me-1"></i> Nuevo tipo
+                <i class="fa-solid fa-plus me-1"></i> Crear tipo de producto
             </a>
         </x-slot:actions>
     </x-crud.page-header>

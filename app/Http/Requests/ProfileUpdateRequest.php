@@ -28,4 +28,28 @@ class ProfileUpdateRequest extends FormRequest
             ],
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'name' => 'nombre',
+            'email' => 'correo electrónico',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'El nombre es obligatorio.',
+            'name.string' => 'El nombre debe ser un texto válido.',
+            'name.max' => 'El nombre no puede superar los 255 caracteres.',
+
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.string' => 'El correo electrónico debe ser un texto válido.',
+            'email.lowercase' => 'El correo electrónico debe estar en minúsculas.',
+            'email.email' => 'Debes ingresar un correo electrónico válido.',
+            'email.max' => 'El correo electrónico no puede superar los 255 caracteres.',
+            'email.unique' => 'Este correo electrónico ya está registrado.',
+        ];
+    }
 }

@@ -1,6 +1,9 @@
 <div class="row g-3">
     <div class="col-md-6">
-        <x-crud.form-input name="nombre" label="Nombre" :value="$ingresoBebida->nombre" placeholder="Ejemplo: Lote bebidas mayo" required />
+        <x-crud.form-input name="nombre" label="N° Lote" :value="$ingresoBebida->nombre" placeholder="Ejemplo: LOTE-BEB-2026-08-001" />
+        @if (!$ingresoBebida->exists)
+            <small class="text-muted d-block mt-1"><i class="fa-solid fa-wand-magic-sparkles me-1"></i>Nombre generado automáticamente. Puedes modificarlo si lo deseas.</small>
+        @endif
     </div>
 
     <div class="col-md-6">

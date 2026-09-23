@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\InsumoRequest;
 use App\Models\Insumo;
-use Illuminate\Http\Request;
 
 class InsumoApiController extends Controller
 {
@@ -17,9 +17,9 @@ class InsumoApiController extends Controller
         );
     }
 
-    public function store(Request $request)
+    public function store(InsumoRequest $request)
     {
-        $insumo = Insumo::create($request->all());
+        $insumo = Insumo::create($request->validated());
 
         return response()->json($insumo, 201);
     }
@@ -33,10 +33,10 @@ class InsumoApiController extends Controller
         return response()->json($insumo);
     }
 
-    public function update(Request $request, string $id)
+    public function update(InsumoRequest $request, string $id)
     {
         $insumo = Insumo::where('estado', 1)->findOrFail($id);
-        $insumo->update($request->all());
+        $insumo->update($request->validated());
 
         return response()->json($insumo);
     }

@@ -5,7 +5,7 @@
 @section('content')
     <x-crud.page-header title="Ingresos de bebidas" subtitle="Registro de ingresos de bebidas.">
         <x-slot:actions>
-            <a href="{{ route('ingreso-bebidas.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Nuevo ingreso</a>
+            <a href="{{ route('ingreso-bebidas.create') }}" class="btn btn-app-primary"><i class="fa-solid fa-plus me-1"></i> Crear ingreso</a>
         </x-slot:actions>
     </x-crud.page-header>
 

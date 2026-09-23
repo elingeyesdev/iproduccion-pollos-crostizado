@@ -22,6 +22,15 @@ class IngresoInsumoApiController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'fecha_ingreso' => 'required|date',
+            'descripcion' => 'nullable|string',
+            'detalles' => 'required|array|min:1',
+            'detalles.*.insumo_id' => 'required|exists:insumos,id',
+            'detalles.*.cantidad' => 'required|numeric|min:0.01',
+            'detalles.*.precio_unitario' => 'required|numeric|min:0',
+        ]);
+
         $ingresoInsumo = DB::transaction(function () use ($request) {
             $ingreso = IngresoInsumo::create([
                 'fecha_ingreso' => $request->fecha_ingreso,
@@ -63,6 +72,15 @@ class IngresoInsumoApiController extends Controller
 
     public function update(Request $request, string $id)
     {
+        $request->validate([
+            'fecha_ingreso' => 'required|date',
+            'descripcion' => 'nullable|string',
+            'detalles' => 'required|array|min:1',
+            'detalles.*.insumo_id' => 'required|exists:insumos,id',
+            'detalles.*.cantidad' => 'required|numeric|min:0.01',
+            'detalles.*.precio_unitario' => 'required|numeric|min:0',
+        ]);
+
         $ingresoInsumo = DB::transaction(function () use ($request, $id) {
             $ingreso = IngresoInsumo::where('estado', 1)->findOrFail($id);
 

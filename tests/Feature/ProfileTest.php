@@ -43,6 +43,43 @@ class ProfileTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_profile_update_only_changes_the_authenticated_users_profile(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create([
+            'name' => 'Other User',
+            'email' => 'other@example.com',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'user_id' => $otherUser->id,
+                'name' => 'Updated User',
+                'email' => 'updated@example.com',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $this->assertSame('Updated User', $user->refresh()->name);
+        $this->assertSame('updated@example.com', $user->email);
+        $this->assertSame('Other User', $otherUser->refresh()->name);
+        $this->assertSame('other@example.com', $otherUser->email);
+    }
+
+    public function test_profile_page_indicates_which_profiles_can_be_modified(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertOk()
+            ->assertSee('Tu propio perfil')
+            ->assertSee('Los perfiles de otros usuarios, sus roles y sus permisos.');
+    }
+
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
         $user = User::factory()->create();

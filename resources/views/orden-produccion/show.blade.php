@@ -6,7 +6,7 @@
     <x-crud.page-header title="Detalle de la orden de producción" subtitle="Información de la orden registrada.">
         <x-slot:actions>
             <a href="{{ route('orden-producciones.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
-            <a href="{{ route('orden-producciones.edit', ['orden_produccione' => $ordenProduccion->id]) }}" class="btn btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
+            <a href="{{ route('orden-producciones.edit', $ordenProduccion) }}" class="btn btn-app-outline"><i class="fa-solid fa-pen me-1"></i> Editar</a>
         </x-slot:actions>
     </x-crud.page-header>
 
@@ -26,8 +26,30 @@
                     </span>
                 </dd>
 
+                <dt class="col-sm-3">Receta / Regla de conversión</dt>
+                <dd class="col-sm-9">
+                    @if ($ordenProduccion->reglaConversion)
+                        <span class="fw-semibold">{{ $ordenProduccion->reglaConversion->insumo?->nombre }}</span>
+                        @if ($ordenProduccion->reglaConversion->recetaConversiones->isNotEmpty())
+                            + {{ $ordenProduccion->reglaConversion->recetaConversiones->map(fn ($d) => $d->insumo?->nombre)->filter()->implode(', ') }}
+                        @endif
+                        &rarr; {{ $ordenProduccion->reglaConversion->producto?->nombre ?? $ordenProduccion->reglaConversion->producto_resultante }}
+                    @else
+                        <span class="text-danger small">Sin receta asignada</span>
+                    @endif
+                </dd>
+
                 <dt class="col-sm-3">Insumos planificados</dt>
                 <dd class="col-sm-9">{{ $ordenProduccion->insumos->count() }} insumos</dd>
+
+                <dt class="col-sm-3">Estado de producción</dt>
+                <dd class="col-sm-9">
+                    @if ((int) ($ordenProduccion->insumos_pendientes_count ?? 0) > 0)
+                        <span class="badge bg-warning text-dark">Pendiente de ejecutar</span>
+                    @else
+                        <span class="badge bg-success">Producción ejecutada</span>
+                    @endif
+                </dd>
             </dl>
         </div>
     </div>
