@@ -10,12 +10,28 @@ use App\Models\Produccion;
 use App\Models\Producto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
 
 class ProduccionApiController extends Controller
 {
     /**
      * Órdenes de producción con insumos pendientes de ejecutar.
      */
+    #[OA\Get(
+        path: '/api/producciones/pendientes',
+        summary: 'Listar órdenes pendientes de producción',
+        description: 'Órdenes de producción que todavía tienen insumos pendientes de ejecutar. Paginado (10 por página); permite buscar por número de orden.',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'search', in: 'query', required: false, description: 'Filtra por número de orden', schema: new OA\Schema(type: 'string', example: 'OR-PRO-2026-10')),
+            new OA\Parameter(name: 'page', in: 'query', required: false, description: 'Número de página', schema: new OA\Schema(type: 'integer', example: 1)),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Órdenes pendientes obtenidas correctamente (paginadas)'),
+            new OA\Response(response: 401, description: 'No autenticado'),
+        ]
+    )]
     public function pendientes(Request $request)
     {
         $search = trim((string) $request->input('search'));
@@ -39,6 +55,33 @@ class ProduccionApiController extends Controller
     /**
      * Datos necesarios para ejecutar el lote completo de una orden de producción.
      */
+    #[OA\Get(
+        path: '/api/producciones/lote/{ordenProduccion}',
+        summary: 'Obtener datos para ejecutar el lote de una orden',
+        description: 'Devuelve la orden, su receta (regla de conversión), el producto resultante, los insumos pendientes y el indicador lote_ejecutable.',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'ordenProduccion', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Datos del lote obtenidos correctamente',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'orden_produccion', type: 'object'),
+                        new OA\Property(property: 'regla', type: 'object', nullable: true),
+                        new OA\Property(property: 'producto', type: 'object', nullable: true),
+                        new OA\Property(property: 'detalles', type: 'array', items: new OA\Items(type: 'object')),
+                        new OA\Property(property: 'lote_ejecutable', type: 'boolean', example: true),
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'No autenticado'),
+            new OA\Response(response: 404, description: 'No encontrado'),
+        ]
+    )]
     public function loteCreate(OrdenProduccion $ordenProduccion)
     {
         $ordenProduccion->loadMissing([
@@ -73,6 +116,41 @@ class ProduccionApiController extends Controller
     /**
      * Ejecuta la producción del lote completo pendiente de una orden.
      */
+    #[OA\Post(
+        path: '/api/producciones/lote/{ordenProduccion}',
+        summary: 'Ejecutar la producción del lote de una orden',
+        description: 'Crea un registro de producción por cada insumo pendiente de la orden, descuenta el stock (stock_actual) de cada insumo consumido y suma la cantidad obtenida al stock (cantidad_actual) del producto resultante. La cantidad obtenida debe estar dentro del rango de rendimiento de la receta.',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'ordenProduccion', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['cantidad_obtenida'],
+                properties: [
+                    new OA\Property(property: 'cantidad_obtenida', type: 'number', format: 'float', minimum: 0.01, example: 40),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Producción ejecutada correctamente',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Producción ejecutada correctamente. Se descontaron 2 insumo(s) y se generaron 40.00 unidades de Pollo frito.'),
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object')),
+                    ]
+                )
+            ),
+            new OA\Response(response: 400, description: 'Stock insuficiente de algún insumo'),
+            new OA\Response(response: 401, description: 'No autenticado'),
+            new OA\Response(response: 404, description: 'No encontrado'),
+            new OA\Response(response: 422, description: 'Error de validación (orden sin receta, sin producto resultante, sin insumos pendientes o cantidad fuera del rango de rendimiento)'),
+        ]
+    )]
     public function loteStore(Request $request, OrdenProduccion $ordenProduccion)
     {
         $data = $request->validate([
@@ -179,6 +257,21 @@ class ProduccionApiController extends Controller
     /**
      * Historial de producciones ejecutadas.
      */
+    #[OA\Get(
+        path: '/api/producciones',
+        summary: 'Listar historial de producciones',
+        description: 'Producciones ejecutadas activas, paginadas (10 por página); permite buscar por número de orden.',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'search', in: 'query', required: false, description: 'Filtra por número de orden', schema: new OA\Schema(type: 'string', example: 'OR-PRO-2026-10')),
+            new OA\Parameter(name: 'page', in: 'query', required: false, description: 'Número de página', schema: new OA\Schema(type: 'integer', example: 1)),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Producciones obtenidas correctamente (paginadas)'),
+            new OA\Response(response: 401, description: 'No autenticado'),
+        ]
+    )]
     public function index(Request $request)
     {
         $search = trim((string) $request->input('search'));
@@ -198,6 +291,21 @@ class ProduccionApiController extends Controller
         return response()->json($producciones);
     }
 
+    #[OA\Get(
+        path: '/api/producciones/{produccion}',
+        summary: 'Ver producción',
+        description: 'Devuelve la producción con su receta, producto, orden de producción, insumo y mermas.',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'produccion', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Producción obtenida correctamente'),
+            new OA\Response(response: 401, description: 'No autenticado'),
+            new OA\Response(response: 404, description: 'No encontrado'),
+        ]
+    )]
     public function show(Produccion $produccion)
     {
         $produccion->loadMissing([

@@ -11,10 +11,6 @@ use App\Http\Controllers\UnidadMedidaController;
 use App\Http\Controllers\TipoProductoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoComposicionController;
-use App\Http\Controllers\DetalleInsumoProductoController;
-use App\Http\Controllers\ProduccionProductoController;
-use App\Http\Controllers\DetalleIngresoBebidaController;
-use App\Http\Controllers\DetalleVentaController;
 use App\Http\Controllers\OrdenProduccionController;
 use App\Http\Controllers\ProduccionController;
 use App\Http\Controllers\IngresoBebidaController;
@@ -61,10 +57,6 @@ Route::middleware(['auth', 'route.permission'])->group(function () {
     Route::post('composicion-productos', [ProductoComposicionController::class, 'store'])->name('productos-composicion.store');
     Route::get('composicion-productos/{producto}/edit', [ProductoComposicionController::class, 'edit'])->name('productos-composicion.edit');
     Route::put('composicion-productos/{producto}', [ProductoComposicionController::class, 'update'])->name('productos-composicion.update');
-    Route::resource('detalle-insumo-productos', DetalleInsumoProductoController::class);
-    Route::resource('produccion-productos', ProduccionProductoController::class);
-    Route::resource('detalle-ingreso-bebidas', DetalleIngresoBebidaController::class);
-    Route::resource('detalle-ventas', DetalleVentaController::class);
     Route::resource('orden-producciones', OrdenProduccionController::class)
         ->parameters(['orden-producciones' => 'ordenProduccion']);
     Route::get('regla-conversiones', [ReglaConversionController::class, 'index'])->name('regla-conversiones.index');
@@ -77,6 +69,7 @@ Route::middleware(['auth', 'route.permission'])->group(function () {
     Route::get('producciones/lote/{ordenProduccion}', [ProduccionController::class, 'loteCreate'])->name('producciones.lote.create');
     Route::post('producciones/lote/{ordenProduccion}', [ProduccionController::class, 'loteStore'])->name('producciones.lote.store');
     Route::get('producciones/{produccion}', [ProduccionController::class, 'show'])->name('producciones.show');
+    Route::get('producciones/{produccion}/pdf', [ProduccionController::class, 'pdf'])->name('producciones.pdf');
 
     Route::get('reportes/insumos', [ReporteController::class, 'insumos'])
         ->middleware('no.store.sensitive')->name('reportes.insumos');
@@ -104,3 +97,4 @@ Route::middleware(['auth', 'route.permission'])->group(function () {
 
 
 require __DIR__.'/auth.php';
+

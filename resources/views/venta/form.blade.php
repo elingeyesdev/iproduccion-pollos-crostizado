@@ -18,9 +18,22 @@
 
         <div class="products-grid" id="products-grid">
             @foreach($productos as $producto)
-                <div class="product-card" data-id="{{ $producto->id }}" data-category="{{ $producto->tipo_producto_id }}" data-name="{{ $producto->nombre }}" data-price="{{ $producto->precio }}">
+                @php $disponible = $producto->stock_disponible; @endphp
+                <div class="product-card {{ $disponible !== null && $disponible <= 0 ? 'sin-stock' : '' }}" data-id="{{ $producto->id }}" data-category="{{ $producto->tipo_producto_id }}" data-name="{{ $producto->nombre }}" data-price="{{ $producto->precio }}">
+                    <div class="product-img">
+                        @if ($producto->imagen_url)
+                            <img src="{{ $producto->imagen_url }}" alt="{{ $producto->nombre }}" loading="lazy">
+                        @else
+                            <i class="fa-solid fa-drumstick-bite"></i>
+                        @endif
+                    </div>
                     <div class="product-name">{{ $producto->nombre }}</div>
                     <div class="product-price">Bs {{ number_format($producto->precio, 2) }}</div>
+                    @if($disponible !== null)
+                        <div class="product-stock {{ $disponible <= 0 ? 'text-danger' : ($disponible <= 5 ? 'text-warning' : 'text-muted') }}">
+                            {{ $disponible <= 0 ? 'Sin stock' : 'Stock: ' . $disponible }}
+                        </div>
+                    @endif
                 </div>
             @endforeach
         </div>
@@ -143,6 +156,84 @@
 
         let cart = [];
 
+        // Stock base por producto y qué stock base consume cada producto vendido (combos -> componentes)
+        const componentes = @json($componentes ?? (object) []);
+        const stockBase = @json($stockBase ?? (object) []);
+        const validarStock = Object.keys(componentes).length > 0;
+
+        // Devuelve el nombre del producto cuyo stock no alcanza para el carrito propuesto, o null si alcanza
+        function faltaStock(carrito) {
+            if (!validarStock) return null;
+
+            const consumo = {};
+            carrito.forEach(item => {
+                Object.entries(componentes[item.id] || {}).forEach(([baseId, cant]) => {
+                    consumo[baseId] = (consumo[baseId] || 0) + cant * item.qty;
+                });
+            });
+
+            for (const [baseId, cant] of Object.entries(consumo)) {
+                if (cant > (stockBase[baseId] ?? 0) + 1e-9) {
+                    return { baseId, disponible: stockBase[baseId] ?? 0 };
+                }
+            }
+            return null;
+        }
+
+        function nombreProducto(id) {
+            return document.querySelector(`.product-card[data-id="${id}"]`)?.dataset.name ?? 'el producto';
+        }
+
+        function avisoSinStock(item, falta) {
+            const componente = falta.baseId != item.id ? ` (componente: ${nombreProducto(falta.baseId)}, disponible: ${falta.disponible})` : ` (disponible: ${falta.disponible})`;
+            mostrarAviso(`No hay stock suficiente de "${item.name}"${componente}.`);
+        }
+
+        function mostrarAviso(mensaje) {
+            let container = document.getElementById('stock-toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'stock-toast-container';
+                container.className = 'toast-container position-fixed top-0 end-0 p-3';
+                container.style.zIndex = 1090;
+                container.style.marginTop = '72px';
+                document.body.appendChild(container);
+            }
+
+            const el = document.createElement('div');
+            el.className = 'toast align-items-center shadow-lg border-start border-4 border-danger';
+            el.setAttribute('role', 'alert');
+            el.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-start gap-3">
+                        <i class="fa-solid fa-box-open text-danger fs-5 mt-1 flex-shrink-0"></i>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold mb-1">Sin stock</div>
+                            <div class="small text-muted"></div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+                </div>`;
+            el.querySelector('.small').textContent = mensaje;
+            container.appendChild(el);
+            el.addEventListener('hidden.bs.toast', () => el.remove());
+            new bootstrap.Toast(el, { delay: 4000 }).show();
+        }
+
+        // Intenta sumar 1 unidad; si el stock no alcanza muestra el aviso y no modifica el carrito
+        function intentarAgregar(item, esNuevo) {
+            const propuesto = esNuevo ? [...cart, item] : cart.map(i => i === item ? { ...i, qty: i.qty + 1 } : i);
+            const falta = faltaStock(propuesto);
+
+            if (falta) {
+                avisoSinStock(item, falta);
+                return;
+            }
+
+            if (esNuevo) cart.push(item); else item.qty++;
+            renderCart();
+        }
+
         // Manejo de descuento
         descuentoInput.addEventListener('input', () => {
             renderCart();
@@ -197,12 +288,10 @@
             const existingItem = cart.find(item => item.id === id);
 
             if (existingItem) {
-                existingItem.qty++;
+                intentarAgregar(existingItem, false);
             } else {
-                cart.push({ id, name, price, qty: 1 });
+                intentarAgregar({ id, name, price, qty: 1 }, true);
             }
-
-            renderCart();
         });
 
         function renderCart() {
@@ -242,8 +331,7 @@
 
                 // Eventos de botones
                 clone.querySelector('.plus-btn').addEventListener('click', () => {
-                    item.qty++;
-                    renderCart();
+                    intentarAgregar(item, false);
                 });
 
                 clone.querySelector('.minus-btn').addEventListener('click', () => {

@@ -72,4 +72,53 @@ class UserRoleAssignment extends Model
             ]);
         });
     }
+
+    /**
+     * Cambia el usuario y/o rol de la asignación: quita el rol anterior
+     * y asigna el nuevo, dejando registro de los roles antes y después.
+     */
+    public function changeRoleWithAudit(int $userId, int $roleId, ?int $assignedBy): self
+    {
+        return DB::transaction(function () use ($userId, $roleId, $assignedBy) {
+            $this->removeRoleFromUser();
+
+            $user = User::findOrFail($userId);
+            $role = Role::findOrFail($roleId);
+
+            $rolesBefore = $user->getRoleNames()->values()->all();
+            $user->assignRole($role->name);
+            $user->tokens()->delete();
+            $rolesAfter = $user->fresh()->getRoleNames()->values()->all();
+
+            $this->update([
+                'user_id' => $user->id,
+                'role_id' => $role->id,
+                'assigned_by' => $assignedBy,
+                'previous_roles' => $rolesBefore,
+                'resulting_roles' => $rolesAfter,
+            ]);
+
+            return $this;
+        });
+    }
+
+    /** Quita el rol al usuario y elimina la asignación. */
+    public function revokeRole(): void
+    {
+        DB::transaction(function () {
+            $this->removeRoleFromUser();
+            $this->delete();
+        });
+    }
+
+    private function removeRoleFromUser(): void
+    {
+        $user = User::find($this->user_id);
+        $role = Role::find($this->role_id);
+
+        if ($user && $role && $user->hasRole($role->name)) {
+            $user->removeRole($role->name);
+            $user->tokens()->delete();
+        }
+    }
 }

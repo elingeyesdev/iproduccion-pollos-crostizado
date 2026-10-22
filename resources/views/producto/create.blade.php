@@ -11,7 +11,7 @@
 
     <div class="card card-elevated">
         <div class="card-body">
-            <form method="POST" action="{{ route('productos.store') }}" novalidate>
+            <form method="POST" action="{{ route('productos.store') }}" enctype="multipart/form-data" novalidate>
                 @csrf
                 @include('producto.form', ['submitLabel' => 'Guardar producto'])
             </form>

@@ -11,7 +11,7 @@
 
     <div class="card card-elevated">
         <div class="card-body">
-            <form method="POST" action="{{ route('productos.update', $producto) }}" novalidate>
+            <form method="POST" action="{{ route('productos.update', $producto) }}" enctype="multipart/form-data" novalidate>
                 @csrf
                 @method('PUT')
                 @include('producto.form', ['submitLabel' => 'Actualizar producto'])

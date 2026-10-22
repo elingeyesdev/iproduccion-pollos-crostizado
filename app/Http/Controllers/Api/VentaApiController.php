@@ -8,11 +8,31 @@ use App\Models\DetalleVenta;
 use App\Models\Producto;
 use App\Models\Venta;
 use App\Models\VentaPago;
+use App\Services\StockService;
+use App\Services\VentaService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
 
 class VentaApiController extends Controller
 {
+    public function __construct(
+        private StockService $stockService,
+        private VentaService $ventaService,
+    ) {
+    }
+
+    #[OA\Get(
+        path: '/api/ventas',
+        summary: 'Listar ventas',
+        description: 'Devuelve las ventas activas con cliente y pagos, ordenadas por id descendente.',
+        tags: ['Ventas'],
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(response: 200, description: 'Ventas obtenidas correctamente'),
+            new OA\Response(response: 401, description: 'No autenticado'),
+        ]
+    )]
     public function index()
     {
         return response()->json(
@@ -20,6 +40,36 @@ class VentaApiController extends Controller
         );
     }
 
+    #[OA\Post(
+        path: '/api/ventas',
+        summary: 'Registrar venta',
+        description: 'Crea la venta con su detalle (productos[i] con cantidades[i]; el precio unitario se toma del producto) y descuenta el stock de cada producto vendido, incluidos los componentes de combos. Registra los pagos en efectivo y/o QR: debe haber al menos un pago y la suma de pagos debe ser igual al total.',
+        tags: ['Ventas'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['cliente_id', 'total', 'productos', 'cantidades', 'precios'],
+                properties: [
+                    new OA\Property(property: 'cliente_id', type: 'integer', example: 1),
+                    new OA\Property(property: 'fecha_venta', type: 'string', format: 'date', nullable: true, example: '2026-10-03'),
+                    new OA\Property(property: 'total', type: 'number', format: 'float', minimum: 0, example: 75),
+                    new OA\Property(property: 'estado', type: 'integer', enum: [0, 1], nullable: true, example: 1),
+                    new OA\Property(property: 'descuento', type: 'number', format: 'float', minimum: 0, nullable: true, example: 0),
+                    new OA\Property(property: 'pago_efectivo', type: 'number', format: 'float', minimum: 0, nullable: true, example: 50),
+                    new OA\Property(property: 'pago_qr', type: 'number', format: 'float', minimum: 0, nullable: true, example: 25),
+                    new OA\Property(property: 'productos', type: 'array', minItems: 1, description: 'IDs de productos', items: new OA\Items(type: 'integer'), example: [2, 5]),
+                    new OA\Property(property: 'cantidades', type: 'array', description: 'Cantidad por producto (mismo orden que productos)', items: new OA\Items(type: 'number', format: 'float', minimum: 0.01), example: [2, 3]),
+                    new OA\Property(property: 'precios', type: 'array', description: 'Precio por producto (mismo orden que productos)', items: new OA\Items(type: 'number', format: 'float', minimum: 0), example: [30, 5]),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Venta registrada correctamente'),
+            new OA\Response(response: 401, description: 'No autenticado'),
+            new OA\Response(response: 422, description: 'Error de validación o error al crear la venta (sin pagos, pagos distintos al total, stock insuficiente)'),
+        ]
+    )]
     public function store(VentaRequest $request)
     {
         $data = $request->validated();
@@ -67,7 +117,7 @@ class VentaApiController extends Controller
                     ]);
 
                     // Lógica de descuento de stock recursiva (combos)
-                    $this->descontarStockProducto($producto, $cantidadVenta);
+                    $this->stockService->moverProducto($producto, -$cantidadVenta);
                 }
 
                 if ($pagoEfectivo > 0) {
@@ -101,6 +151,21 @@ class VentaApiController extends Controller
         return response()->json($venta, 201);
     }
 
+    #[OA\Get(
+        path: '/api/ventas/{venta}',
+        summary: 'Ver venta',
+        description: 'Devuelve la venta activa con cliente, detalle de productos y pagos.',
+        tags: ['Ventas'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'venta', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Venta obtenida correctamente'),
+            new OA\Response(response: 401, description: 'No autenticado'),
+            new OA\Response(response: 404, description: 'No encontrado'),
+        ]
+    )]
     public function show(string $id)
     {
         $venta = Venta::with(['cliente', 'detalles.producto', 'pagos'])
@@ -110,6 +175,40 @@ class VentaApiController extends Controller
         return response()->json($venta);
     }
 
+    #[OA\Put(
+        path: '/api/ventas/{venta}',
+        summary: 'Actualizar venta',
+        description: 'Actualiza los datos de cabecera de la venta. Se valida con las mismas reglas que el registro, pero no modifica el detalle, los pagos ni el stock.',
+        tags: ['Ventas'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'venta', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['cliente_id', 'total', 'productos', 'cantidades', 'precios'],
+                properties: [
+                    new OA\Property(property: 'cliente_id', type: 'integer', example: 1),
+                    new OA\Property(property: 'fecha_venta', type: 'string', format: 'date', nullable: true, example: '2026-10-03'),
+                    new OA\Property(property: 'total', type: 'number', format: 'float', minimum: 0, example: 75),
+                    new OA\Property(property: 'estado', type: 'integer', enum: [0, 1], nullable: true, example: 1),
+                    new OA\Property(property: 'descuento', type: 'number', format: 'float', minimum: 0, nullable: true, example: 0),
+                    new OA\Property(property: 'pago_efectivo', type: 'number', format: 'float', minimum: 0, nullable: true, example: 50),
+                    new OA\Property(property: 'pago_qr', type: 'number', format: 'float', minimum: 0, nullable: true, example: 25),
+                    new OA\Property(property: 'productos', type: 'array', minItems: 1, description: 'IDs de productos', items: new OA\Items(type: 'integer'), example: [2, 5]),
+                    new OA\Property(property: 'cantidades', type: 'array', description: 'Cantidad por producto (mismo orden que productos)', items: new OA\Items(type: 'number', format: 'float', minimum: 0.01), example: [2, 3]),
+                    new OA\Property(property: 'precios', type: 'array', description: 'Precio por producto (mismo orden que productos)', items: new OA\Items(type: 'number', format: 'float', minimum: 0), example: [30, 5]),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Venta actualizada correctamente'),
+            new OA\Response(response: 401, description: 'No autenticado'),
+            new OA\Response(response: 404, description: 'No encontrado'),
+            new OA\Response(response: 422, description: 'Error de validación'),
+        ]
+    )]
     public function update(VentaRequest $request, string $id)
     {
         $venta = Venta::where('estado', 1)->findOrFail($id);
@@ -118,34 +217,36 @@ class VentaApiController extends Controller
         return response()->json($venta);
     }
 
+    #[OA\Delete(
+        path: '/api/ventas/{venta}',
+        summary: 'Anular venta',
+        description: 'Anula la venta (estado = 0 en venta, detalles y pagos) y repone al stock los productos vendidos, incluidos los componentes de combos.',
+        tags: ['Ventas'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'venta', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Venta anulada y stock repuesto'),
+            new OA\Response(response: 401, description: 'No autenticado'),
+            new OA\Response(response: 404, description: 'No encontrado'),
+            new OA\Response(response: 422, description: 'No se pudo anular la venta (por ejemplo, ya estaba anulada)'),
+        ]
+    )]
     public function destroy(string $id)
     {
         $venta = Venta::where('estado', 1)->findOrFail($id);
-        $venta->update(['estado' => 0]);
+
+        try {
+            $this->ventaService->anular($venta);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => 'No se pudo anular la venta: ' . $e->getMessage(),
+            ], 422);
+        }
 
         return response()->json([
-            'message' => 'Venta eliminada',
+            'message' => 'Venta anulada y stock repuesto',
         ]);
-    }
-
-    /**
-     * Descuenta el stock de un producto de forma recursiva si es un combo.
-     */
-    private function descontarStockProducto(Producto $producto, float $cantidadVenta)
-    {
-        if ($producto->ingredientes->count() > 0) {
-            // Es un combo: descontar sus componentes (productos)
-            foreach ($producto->ingredientes as $ingrediente) {
-                $cantidadARestar = $ingrediente->pivot->cantidad * $cantidadVenta;
-                $this->descontarStockProducto($ingrediente, $cantidadARestar);
-            }
-        } else {
-            // Es un producto simple: descontar su propio stock
-            if ($producto->cantidad_actual < $cantidadVenta) {
-                throw new \RuntimeException("Stock insuficiente para: {$producto->nombre}. Disponible: {$producto->cantidad_actual}");
-            }
-            $producto->cantidad_actual -= $cantidadVenta;
-            $producto->save();
-        }
     }
 }

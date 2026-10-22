@@ -44,6 +44,11 @@ class StoreReglaConversionRequest extends FormRequest
     {
         $this->merge([
             'cantidad_entrada' => 1,
+            // Las filas de receta que se dejaron vacías no son insumos adicionales
+            'detalles' => array_values(array_filter(
+                (array) $this->input('detalles', []),
+                fn ($d) => filled($d['insumo_id'] ?? null) || filled($d['cantidad'] ?? null)
+            )),
         ]);
 
         if ($this->filled('tipo_conversion')) {

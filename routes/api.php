@@ -39,13 +39,15 @@ Route::name('api.')->middleware('auth:sanctum')->group(function () {
     Route::get('asignacion-roles', [RoleAssignmentApiController::class, 'index']);
     Route::post('asignacion-roles', [RoleAssignmentApiController::class, 'store']);
     Route::get('asignacion-roles/{assignment}', [RoleAssignmentApiController::class, 'show']);
+    Route::put('asignacion-roles/{assignment}', [RoleAssignmentApiController::class, 'update']);
+    Route::delete('asignacion-roles/{assignment}', [RoleAssignmentApiController::class, 'destroy']);
 
     // Parametrización
     Route::apiResource('clientes', ClienteApiController::class);
     Route::apiResource('unidad-medidas', UnidadMedidaApiController::class);
     Route::apiResource('insumos', InsumoApiController::class);
     Route::apiResource('productos', ProductoApiController::class);
-    Route::apiResource('componentes-producto', ComponenteProductoApiController::class)->only(['index', 'show', 'store', 'update'])->parameters(['componentes-producto' => 'producto']);
+    Route::apiResource('componentes-producto', ComponenteProductoApiController::class)->only(['index', 'show', 'store', 'update', 'destroy'])->parameters(['componentes-producto' => 'producto']);
     Route::apiResource('regla-conversion', ReglaConversionApiController::class);
     Route::apiResource('tipo-productos', TipoProductoApiController::class);
 

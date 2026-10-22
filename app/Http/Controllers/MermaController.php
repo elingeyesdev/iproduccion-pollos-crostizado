@@ -19,7 +19,7 @@ class MermaController extends Controller
         $search = trim((string) $request->input('search'));
 
         $mermas = Merma::query()
-            ->with(['produccion.ordenProduccion:id,numero_orden', 'produccion.producto', 'produccion.reglaConversion'])
+            ->with(['produccion.ordenProduccion:orden_producciones.id,orden_producciones.numero_orden', 'produccion.producto', 'produccion.reglaConversion'])
             ->where('estado', 1)
             ->when($search, function ($query) use ($search) {
                 $query->where('cantidad', 'like', "%{$search}%");
@@ -58,17 +58,24 @@ class MermaController extends Controller
 
         $cantidad = (float) $data['cantidad'];
 
-        if ($cantidad > (float) $producto->cantidad_actual) {
+        try {
+            DB::transaction(function () use ($data, $producto, $cantidad) {
+                // Bloqueo pesimista: la validación y el descuento ocurren sobre la misma fila bloqueada
+                $fila = Producto::whereKey($producto->id)->lockForUpdate()->firstOrFail();
+
+                if ($cantidad > (float) $fila->cantidad_actual) {
+                    throw new \RuntimeException("Stock insuficiente de \"{$fila->nombre}\" para registrar esta merma. Disponible: {$fila->cantidad_actual}.");
+                }
+
+                Merma::create($data);
+
+                $fila->decrement('cantidad_actual', (int) round($cantidad));
+            });
+        } catch (\RuntimeException $e) {
             return Redirect::back()
                 ->withInput()
-                ->withErrors(['cantidad' => "Stock insuficiente de \"{$producto->nombre}\" para registrar esta merma. Disponible: {$producto->cantidad_actual}."]);
+                ->withErrors(['cantidad' => $e->getMessage()]);
         }
-
-        DB::transaction(function () use ($data, $producto, $cantidad) {
-            Merma::create($data);
-
-            Producto::whereKey($producto->id)->decrement('cantidad_actual', (int) round($cantidad));
-        });
 
         return Redirect::route('mermas.index')
             ->with('success', 'Merma registrada correctamente.');
@@ -110,26 +117,29 @@ class MermaController extends Controller
 
         $cantidadNueva = (float) $data['cantidad'];
 
-        $stockDisponible = (float) $productoNuevo->cantidad_actual;
-        if ($productoAnterior && $productoAnterior->id === $productoNuevo->id) {
-            $stockDisponible += (float) $merma->cantidad;
-        }
+        try {
+            DB::transaction(function () use ($merma, $data, $productoAnterior, $productoNuevo, $cantidadNueva) {
+                // Se repone primero la merma anterior; si falla la validación, el rollback la deshace
+                if ($productoAnterior) {
+                    Producto::whereKey($productoAnterior->id)->lockForUpdate()->firstOrFail()
+                        ->increment('cantidad_actual', (int) round((float) $merma->cantidad));
+                }
 
-        if ($cantidadNueva > $stockDisponible) {
+                $fila = Producto::whereKey($productoNuevo->id)->lockForUpdate()->firstOrFail();
+
+                if ($cantidadNueva > (float) $fila->cantidad_actual) {
+                    throw new \RuntimeException("Stock insuficiente de \"{$fila->nombre}\" para esta merma. Disponible: " . number_format((float) $fila->cantidad_actual, 2) . '.');
+                }
+
+                $merma->update($data);
+
+                $fila->decrement('cantidad_actual', (int) round($cantidadNueva));
+            });
+        } catch (\RuntimeException $e) {
             return Redirect::back()
                 ->withInput()
-                ->withErrors(['cantidad' => "Stock insuficiente de \"{$productoNuevo->nombre}\" para esta merma. Disponible: " . number_format($stockDisponible, 2) . '.']);
+                ->withErrors(['cantidad' => $e->getMessage()]);
         }
-
-        DB::transaction(function () use ($merma, $data, $productoAnterior, $productoNuevo, $cantidadNueva) {
-            if ($productoAnterior) {
-                Producto::whereKey($productoAnterior->id)->increment('cantidad_actual', (int) round((float) $merma->cantidad));
-            }
-
-            $merma->update($data);
-
-            Producto::whereKey($productoNuevo->id)->decrement('cantidad_actual', (int) round($cantidadNueva));
-        });
 
         return Redirect::route('mermas.index')
             ->with('success', 'Merma actualizada correctamente.');
@@ -156,7 +166,7 @@ class MermaController extends Controller
 
     private function produccionesConProducto()
     {
-        return Produccion::with(['producto', 'reglaConversion', 'ordenProduccion:id,numero_orden'])
+        return Produccion::with(['producto', 'reglaConversion', 'ordenProduccion:orden_producciones.id,orden_producciones.numero_orden'])
             ->where('estado', 1)
             ->orderByDesc('created_at')
             ->get()

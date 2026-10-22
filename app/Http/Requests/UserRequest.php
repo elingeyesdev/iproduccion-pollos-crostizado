@@ -31,9 +31,15 @@ class UserRequest extends FormRequest
         ];
 
         if ($this->isMethod('POST')) {
-            $rules['password'] = ['required', 'string', Password::min(8)->mixedCase()->numbers()->uncompromised(), 'confirmed'];
+            $rules['password'] = ['required', 
+            'string', 
+            Password::min(8)->mixedCase()->numbers()->uncompromised(),
+             'confirmed'];
         } else {
-            $rules['password'] = ['nullable', 'string', Password::min(8)->mixedCase()->numbers()->uncompromised(), 'confirmed'];
+            $rules['password'] = ['nullable',
+             'string',
+              Password::min(8)->mixedCase()->numbers()->uncompromised(),
+               'confirmed'];
         }
 
         $rules['password'][] = function (string $attribute, mixed $value, \Closure $fail): void {

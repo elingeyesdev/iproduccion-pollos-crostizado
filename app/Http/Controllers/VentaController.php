@@ -14,11 +14,19 @@ use App\Models\TipoProducto;
 use App\Models\Producto;
 use App\Models\DetalleVenta;
 use App\Models\VentaPago;
+use App\Services\StockService;
+use App\Services\VentaService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class VentaController extends Controller
 {
+    public function __construct(
+        private StockService $stockService,
+        private VentaService $ventaService,
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->input('search'));
@@ -44,9 +52,22 @@ class VentaController extends Controller
         $venta = new Venta();
         $clientes = Cliente::where('estado', 1)->orderBy('nombre')->get();
         $tipoProductos = TipoProducto::where('estado', 1)->orderBy('nombre')->get();
-        $productos = Producto::where('estado', 1)->orderBy('nombre')->get();
+        $productos = Producto::where('estado', 1)->with('ingredientes')->orderBy('nombre')->get();
 
-        return view('venta.create', compact('venta', 'clientes', 'tipoProductos', 'productos'));
+        // Para validar en el carrito: qué stock base consume cada producto (los combos descuentan sus componentes)
+        $componentes = $productos->mapWithKeys(fn (Producto $p) => [$p->id => $this->stockService->componentesBase($p)]);
+
+        $stockBase = Producto::whereIn('id', $componentes->flatMap(fn ($c) => array_keys($c))->unique())
+            ->pluck('cantidad_actual', 'id')
+            ->map(fn ($stock) => (float) $stock);
+
+        $productos->each(function (Producto $p) use ($componentes, $stockBase) {
+            $p->setAttribute('stock_disponible', (int) collect($componentes[$p->id])
+                ->map(fn ($cant, $id) => $cant > 0 ? floor(($stockBase[$id] ?? 0) / $cant) : 0)
+                ->min());
+        });
+
+        return view('venta.create', compact('venta', 'clientes', 'tipoProductos', 'productos', 'componentes', 'stockBase'));
     }
 
     public function store(VentaRequest $request): RedirectResponse
@@ -98,7 +119,7 @@ class VentaController extends Controller
                 ]);
 
                 // Lógica de Descuento de Stock Recursiva (Combos)
-                $this->descontarStockProducto($producto, $cantidadVenta);
+                $this->stockService->moverProducto($producto, -$cantidadVenta);
             }
 
             if ($pagoEfectivo > 0) {
@@ -153,30 +174,14 @@ class VentaController extends Controller
 
     public function destroy(Venta $venta): RedirectResponse
     {
-        $venta->update(['estado' => 0]);
+        try {
+            $this->ventaService->anular($venta);
+        } catch (\RuntimeException $e) {
+            return Redirect::route('ventas.index')
+                ->with('error', 'No se pudo anular la venta: ' . $e->getMessage());
+        }
 
         return Redirect::route('ventas.index')
-            ->with('success', 'Venta eliminada correctamente.');
-    }
-
-    /**
-     * Descuenta el stock de un producto de forma recursiva si es un combo.
-     */
-    private function descontarStockProducto(Producto $producto, float $cantidadVenta)
-    {
-        if ($producto->ingredientes->count() > 0) {
-            // Es un combo: descontar sus componentes (productos)
-            foreach ($producto->ingredientes as $ingrediente) {
-                $cantidadARestar = $ingrediente->pivot->cantidad * $cantidadVenta;
-                $this->descontarStockProducto($ingrediente, $cantidadARestar);
-            }
-        } else {
-            // Es un producto simple: descontar su propio stock
-            if ($producto->cantidad_actual < $cantidadVenta) {
-                throw new \RuntimeException("Stock insuficiente para: {$producto->nombre}. Disponible: {$producto->cantidad_actual}");
-            }
-            $producto->cantidad_actual -= $cantidadVenta;
-            $producto->save();
-        }
+            ->with('success', 'Venta anulada correctamente. El stock de los productos fue repuesto.');
     }
 }
