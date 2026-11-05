@@ -22,6 +22,18 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable,HasRoles,HasApiTokens;
 
+    public function hasVerifiedEmail(): bool
+    {
+        return ! config('auth.email_verification_required', true) || parent::hasVerifiedEmail();
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        if (config('auth.email_verification_required', true)) {
+            parent::sendEmailVerificationNotification();
+        }
+    }
+
     /**
      * Get the attributes that should be cast.
      *

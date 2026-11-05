@@ -55,6 +55,20 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_unverified_users_can_authenticate_when_verification_is_disabled(): void
+    {
+        config(['auth.email_verification_required' => false]);
+        $user = User::factory()->unverified()->create();
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();
