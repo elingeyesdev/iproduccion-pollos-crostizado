@@ -41,6 +41,7 @@ return [
             'title' => 'Modulo de Reportes',
             'module_icon' => 'bi bi-graph-up-arrow',
             'items' => [
+                ['label' => 'Indicadores de gestión', 'icon' => 'fa-solid fa-gauge-high', 'route' => 'reportes.indicadores', 'active' => 'reportes.indicadores'],
                 ['label' => 'Reporte de insumos', 'icon' => 'fa-solid fa-file-lines', 'route' => 'reportes.insumos', 'active' => 'reportes.insumos'],
                 ['label' => 'Reporte de Productos', 'icon' => 'fa-solid fa-file-invoice', 'route' => 'reportes.productos', 'active' => 'reportes.productos'],
                 ['label' => 'Reporte mensual de ventas', 'icon' => 'fa-solid fa-chart-column', 'route' => 'reportes.ventas-mensual', 'active' => 'reportes.ventas-mensual'],

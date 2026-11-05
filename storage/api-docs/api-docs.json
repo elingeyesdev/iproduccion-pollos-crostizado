@@ -2696,6 +2696,478 @@
                 ]
             }
         },
+        "/api/reportes/insumos": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte de insumos",
+                "description": "Insumos activos con su stock y unidad de medida. Paginado (15 por página); permite buscar por nombre.",
+                "operationId": "ec4ceb0e8685fdd4f11a3a3e04007d86",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por nombre del insumo",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Pollo"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Insumos obtenidos correctamente (paginados)"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/productos": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte de productos",
+                "description": "Productos activos con su stock, precio y tipo. Paginado (15 por página); permite buscar por nombre.",
+                "operationId": "25862bcd60fe369295a8ea0f15f0282c",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por nombre del producto",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Porción"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Productos obtenidos correctamente (paginados)"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/stock": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte de stock",
+                "description": "Insumos con stock igual o menor al mínimo y todos los productos activos ordenados por menor stock.",
+                "operationId": "603d65d6fbf8e8280613622c42269460",
+                "responses": {
+                    "200": {
+                        "description": "Stock obtenido correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "insumos_bajo_minimo": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "productos": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/ventas-mensual": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte mensual de ventas",
+                "description": "Cantidad de ventas, monto total y productos vendidos del mes indicado (por defecto, el mes actual).",
+                "operationId": "413e3e76b46bc87f1b903935b56e935d",
+                "parameters": [
+                    {
+                        "name": "mes",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10,
+                            "maximum": 12,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "anio",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2026
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reporte de ventas obtenido correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "mes": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "anio": {
+                                            "type": "integer",
+                                            "example": 2026
+                                        },
+                                        "total_ventas": {
+                                            "type": "integer",
+                                            "example": 120
+                                        },
+                                        "total_monto": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 8450.5
+                                        },
+                                        "productos_vendidos": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "producto_nombre": {
+                                                        "type": "string"
+                                                    },
+                                                    "cantidad_total": {
+                                                        "type": "number"
+                                                    },
+                                                    "monto_total": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Mes o año inválido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/produccion-mensual": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte mensual de producción",
+                "description": "Órdenes ejecutadas, insumos consumidos y productos obtenidos en el mes indicado (por defecto, el mes actual).",
+                "operationId": "b668cb5b0a04b41333cc165b29c90461",
+                "parameters": [
+                    {
+                        "name": "mes",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10,
+                            "maximum": 12,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "anio",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2026
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reporte de producción obtenido correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "mes": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "anio": {
+                                            "type": "integer",
+                                            "example": 2026
+                                        },
+                                        "total_ordenes": {
+                                            "type": "integer",
+                                            "example": 15
+                                        },
+                                        "insumos_consumidos": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "nombre": {
+                                                        "type": "string"
+                                                    },
+                                                    "cantidad_total": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "productos_obtenidos": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "nombre": {
+                                                        "type": "string"
+                                                    },
+                                                    "cantidad_total": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "total_cantidad_obtenida": {
+                                            "type": "number",
+                                            "example": 600
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Mes o año inválido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/indicadores": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Indicadores del negocio",
+                "description": "KPIs de ventas, producción e inventario del rango indicado (por defecto, del inicio del mes hasta hoy), con su variación porcentual respecto al período anterior de igual duración. La variación es null cuando el período anterior vale 0.",
+                "operationId": "d255c54a250b07fc16ae5655bdee40c4",
+                "parameters": [
+                    {
+                        "name": "desde",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-10-01"
+                        }
+                    },
+                    {
+                        "name": "hasta",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-10-28"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Indicadores obtenidos correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "desde": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "hasta": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "ant_desde": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "ant_hasta": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "actual": {
+                                            "description": "ingresos, num_ventas, ticket_promedio, clientes_atendidos, descuentos, gasto_insumos, resultado_bruto, margen_bruto, cantidad_insumo, cantidad_obtenida, rendimiento, mermas, pct_merma, ordenes_programadas, ordenes_ejecutadas, cumplimiento",
+                                            "type": "object"
+                                        },
+                                        "anterior": {
+                                            "description": "Mismos campos que \"actual\" para el período anterior",
+                                            "type": "object"
+                                        },
+                                        "variaciones": {
+                                            "description": "Variación % por indicador (null si no hay base de comparación)",
+                                            "type": "object"
+                                        },
+                                        "serie_ventas": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "dia": {
+                                                        "type": "string",
+                                                        "format": "date"
+                                                    },
+                                                    "fecha": {
+                                                        "type": "string",
+                                                        "example": "28/10"
+                                                    },
+                                                    "monto": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "top_productos": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "top_clientes": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "metodos_pago": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "insumos_bajo_minimo": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "productos_sin_stock": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "valor_inventario": {
+                                            "type": "number"
+                                        },
+                                        "productos_sin_rotacion": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "ordenes_pendientes": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Fecha inválida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/asignacion-roles": {
             "get": {
                 "tags": [
@@ -4249,6 +4721,10 @@
         {
             "name": "Reglas de conversión",
             "description": "Reglas de conversión"
+        },
+        {
+            "name": "Reportes",
+            "description": "Reportes"
         },
         {
             "name": "Asignación de roles",

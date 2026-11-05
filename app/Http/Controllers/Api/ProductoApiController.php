@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductoRequest;
 use App\Models\Producto;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
 class ProductoApiController extends Controller
@@ -55,8 +56,13 @@ class ProductoApiController extends Controller
     )]
     public function store(ProductoRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $data = $request->safe()->except(['imagen', 'quitar_imagen']);
         $data['estado'] = $data['estado'] ?? 1;
+
+        // Foto opcional (multipart), guardada igual que en el panel web.
+        if ($request->hasFile('imagen')) {
+            $data['imagen'] = $request->file('imagen')->store('productos', 'public');
+        }
 
         $producto = Producto::create($data);
 
@@ -120,10 +126,22 @@ class ProductoApiController extends Controller
             ->where('estado', 1)
             ->findOrFail($id);
 
-        $data = $request->validated();
+        $data = $request->safe()->except(['imagen', 'quitar_imagen']);
         $data['estado'] = $data['estado'] ?? $producto->estado;
 
+        // Foto nueva o pedido de quitarla; la anterior se borra del disco después de guardar.
+        if ($request->hasFile('imagen') || $request->boolean('quitar_imagen')) {
+            $anterior = $producto->imagen;
+            $data['imagen'] = $request->hasFile('imagen')
+                ? $request->file('imagen')->store('productos', 'public')
+                : null;
+        }
+
         $producto->update($data);
+
+        if (! empty($anterior)) {
+            Storage::disk('public')->delete($anterior);
+        }
 
         return response()->json($producto);
     }

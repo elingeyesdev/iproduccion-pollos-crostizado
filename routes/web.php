@@ -81,6 +81,8 @@ Route::middleware(['auth', 'route.permission'])->group(function () {
         ->middleware('no.store.sensitive')->name('reportes.produccion-mensual');
     Route::get('reportes/stock', [ReporteController::class, 'stock'])
         ->middleware('no.store.sensitive')->name('reportes.stock');
+    Route::get('reportes/indicadores', [ReporteController::class, 'indicadores'])
+        ->middleware('no.store.sensitive')->name('reportes.indicadores');
 
     Route::resource('ingreso-bebidas', IngresoBebidaController::class);
     Route::resource('mermas', MermaController::class);

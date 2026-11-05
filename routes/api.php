@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\OrdenProduccionApiController;
 use App\Http\Controllers\Api\ProduccionApiController;
 use App\Http\Controllers\Api\ProductoApiController;
 use App\Http\Controllers\Api\ReglaConversionApiController;
+use App\Http\Controllers\Api\ReporteApiController;
 use App\Http\Controllers\Api\RoleAssignmentApiController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\TipoProductoApiController;
@@ -62,4 +63,14 @@ Route::name('api.')->middleware('auth:sanctum')->group(function () {
     Route::get('producciones/{produccion}', [ProduccionApiController::class, 'show']);
     Route::apiResource('mermas', MermaController::class);
     Route::apiResource('ventas', VentaApiController::class);
+
+    // Reportes
+    Route::prefix('reportes')->middleware('no.store.sensitive')->group(function () {
+        Route::get('insumos', [ReporteApiController::class, 'insumos']);
+        Route::get('productos', [ReporteApiController::class, 'productos']);
+        Route::get('stock', [ReporteApiController::class, 'stock']);
+        Route::get('ventas-mensual', [ReporteApiController::class, 'ventasMensual']);
+        Route::get('produccion-mensual', [ReporteApiController::class, 'produccionMensual']);
+        Route::get('indicadores', [ReporteApiController::class, 'indicadores']);
+    });
 });
