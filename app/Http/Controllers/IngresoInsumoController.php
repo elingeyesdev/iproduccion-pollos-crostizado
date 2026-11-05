@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\IngresoInsumoRequest;
 use App\Models\IngresoInsumo;
 use App\Models\Insumo;
+use App\Services\StockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,10 @@ use Illuminate\View\View;
 
 class IngresoInsumoController extends Controller
 {
+    public function __construct(private StockService $stockService)
+    {
+    }
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->input('search'));
@@ -85,30 +90,34 @@ class IngresoInsumoController extends Controller
     {
         $data = $request->validated();
 
-        DB::transaction(function () use ($data, $ingresoInsumo) {
-            foreach ($ingresoInsumo->detalles as $detalle) {
-                Insumo::where('id', $detalle->insumo_id)
-                    ->decrement('stock_actual', (float) $detalle->cantidad);
-            }
+        try {
+            DB::transaction(function () use ($data, $ingresoInsumo) {
+                // Solo se aplica la diferencia neta por insumo; falla si ya se consumió en producción
+                $this->stockService->aplicarDiferenciaInsumos(
+                    $ingresoInsumo->detalles()->where('estado', 1)->get(),
+                    $data['detalles']
+                );
 
-            $ingresoInsumo->update([
-                'fecha_ingreso' => $data['fecha_ingreso'],
-                'descripcion' => $data['descripcion'] ?? null,
-            ]);
-
-            $ingresoInsumo->detalles()->delete();
-
-            foreach ($data['detalles'] as $detalle) {
-                $ingresoInsumo->detalles()->create([
-                    'insumo_id' => $detalle['insumo_id'],
-                    'cantidad' => $detalle['cantidad'],
-                    'precio_unitario' => $detalle['precio_unitario'],
+                $ingresoInsumo->update([
+                    'fecha_ingreso' => $data['fecha_ingreso'],
+                    'descripcion' => $data['descripcion'] ?? null,
                 ]);
 
-                Insumo::where('id', $detalle['insumo_id'])
-                    ->increment('stock_actual', (float) $detalle['cantidad']);
-            }
-        });
+                $ingresoInsumo->detalles()->delete();
+
+                foreach ($data['detalles'] as $detalle) {
+                    $ingresoInsumo->detalles()->create([
+                        'insumo_id' => $detalle['insumo_id'],
+                        'cantidad' => $detalle['cantidad'],
+                        'precio_unitario' => $detalle['precio_unitario'],
+                    ]);
+                }
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
 
         return redirect()->route('ingreso-insumos.index')
             ->with('success', 'Ingreso de insumos actualizado correctamente.');
@@ -116,14 +125,25 @@ class IngresoInsumoController extends Controller
 
     public function destroy(IngresoInsumo $ingresoInsumo): RedirectResponse
     {
-        DB::transaction(function () use ($ingresoInsumo) {
-            foreach ($ingresoInsumo->detalles as $detalle) {
-                Insumo::where('id', $detalle->insumo_id)
-                    ->decrement('stock_actual', (float) $detalle->cantidad);
-            }
+        try {
+            DB::transaction(function () use ($ingresoInsumo) {
+                $ingreso = IngresoInsumo::whereKey($ingresoInsumo->id)->lockForUpdate()->firstOrFail();
 
-            $ingresoInsumo->update(['estado' => 0]);
-        });
+                if ((int) $ingreso->estado === 0) {
+                    throw new \RuntimeException('El ingreso ya fue eliminado.');
+                }
+
+                $this->stockService->aplicarDiferenciaInsumos(
+                    $ingreso->detalles()->where('estado', 1)->get(),
+                    []
+                );
+
+                $ingreso->update(['estado' => 0]);
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()->route('ingreso-insumos.index')
+                ->with('error', $e->getMessage());
+        }
 
         return redirect()->route('ingreso-insumos.index')
             ->with('success', 'Ingreso de insumos eliminado correctamente.');

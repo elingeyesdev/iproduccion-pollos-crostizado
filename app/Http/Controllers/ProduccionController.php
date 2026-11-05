@@ -7,8 +7,10 @@ use App\Models\OrdenProduccion;
 use App\Models\OrdenProduccionInsumo;
 use App\Models\Produccion;
 use App\Models\Producto;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
@@ -142,20 +144,71 @@ class ProduccionController extends Controller
 
     public function show(Produccion $produccion): View
     {
-        $relations = [
+        return view('produccion.show', $this->datosInforme($produccion));
+    }
+
+    public function pdf(Produccion $produccion): Response
+    {
+        $datos = $this->datosInforme($produccion);
+        $nombre = 'informe-produccion-' . ($datos['orden']?->numero_orden ?? $produccion->id) . '.pdf';
+
+        return Pdf::loadView('produccion.informe-pdf', $datos)
+            ->setPaper('letter')
+            ->stream($nombre);
+    }
+
+    // Un lote ejecutado genera una fila de producción por cada insumo de la orden,
+    // todas en la misma transacción: se agrupan para armar el informe completo.
+    private function datosInforme(Produccion $produccion): array
+    {
+        $produccion->loadMissing([
             'reglaConversion.insumo.unidadMedida',
-            'reglaConversion.unidadEntrada',
             'reglaConversion.unidadSalida',
-            'reglaConversion.producto',
             'producto',
-            'ordenProduccion.insumos.insumo.unidadMedida',
-            'ordenProduccionInsumo.insumo.unidadMedida',
-            'mermas',
+            'ordenProduccion',
+            'ordenProduccionInsumo',
+        ]);
+
+        $orden = $produccion->ordenProduccion;
+
+        $lote = Produccion::query()
+            ->with(['ordenProduccionInsumo.insumo.unidadMedida', 'mermas' => fn ($q) => $q->where('estado', 1)])
+            ->delMismoLote($produccion)
+            ->orderBy('id')
+            ->get();
+
+        if ($lote->isEmpty()) {
+            $lote = collect([$produccion->load(['ordenProduccionInsumo.insumo.unidadMedida', 'mermas' => fn ($q) => $q->where('estado', 1)])]);
+        }
+
+        $insumosConsumidos = $lote->map(fn (Produccion $p) => [
+            'insumo' => $p->ordenProduccionInsumo?->insumo?->nombre ?? '-',
+            'unidad' => $p->ordenProduccionInsumo?->insumo?->unidadMedida?->abreviatura
+                ?? $p->ordenProduccionInsumo?->insumo?->unidadMedida?->nombre ?? '-',
+            'cantidad' => (float) $p->cantidad_insumo,
+            'stock_actual' => (float) ($p->ordenProduccionInsumo?->insumo?->stock_actual ?? 0),
+            'principal' => $p->ordenProduccionInsumo?->insumo_id === $produccion->reglaConversion?->insumo_id,
+        ]);
+
+        $mermas = $lote->flatMap->mermas->sortBy('created_at')->values();
+
+        $cantidadObtenida = (float) $produccion->cantidad_obtenida;
+        $totalMerma = (float) $mermas->sum('cantidad');
+        $principal = $insumosConsumidos->firstWhere('principal', true) ?? $insumosConsumidos->first();
+        $cantidadPrincipal = (float) ($principal['cantidad'] ?? 0);
+
+        $resumen = [
+            'cantidad_obtenida' => $cantidadObtenida,
+            'total_merma' => $totalMerma,
+            'cantidad_neta' => max($cantidadObtenida - $totalMerma, 0),
+            'porcentaje_merma' => $cantidadObtenida > 0 ? $totalMerma / $cantidadObtenida * 100 : 0,
+            'rendimiento' => $cantidadPrincipal > 0 ? $cantidadObtenida / $cantidadPrincipal : null,
+            'insumo_principal' => $principal,
+            'unidad_salida' => $produccion->reglaConversion?->unidadSalida?->abreviatura
+                ?? $produccion->reglaConversion?->unidadSalida?->nombre ?? 'unid.',
         ];
 
-        $produccion->loadMissing($relations);
-
-        return view('produccion.show', compact('produccion'));
+        return compact('produccion', 'orden', 'lote', 'insumosConsumidos', 'mermas', 'resumen');
     }
 
     private function descontarStockInsumo(OrdenProduccionInsumo $detalle): void

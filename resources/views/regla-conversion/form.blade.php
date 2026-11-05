@@ -22,7 +22,7 @@
         <select id="unidad_medida_entrada_id" name="unidad_medida_entrada_id" class="form-select @error('unidad_medida_entrada_id') is-invalid @enderror" required>
             <option value="">Selecciona unidad</option>
             @foreach ($unidades as $unidad)
-                <option value="{{ $unidad->id }}" @selected(old('unidad_medida_entrada_id', $reglaConversion->unidad_medida_entrada_id) == $unidad->id)>
+                <option value="{{ $unidad->id }}" @selected(old('unidad_medida_entrada_id', $reglaConversion->unidad_entrada_id) == $unidad->id)>
                     {{ $unidad->nombre }}
                 </option>
             @endforeach
@@ -59,7 +59,7 @@
         <select id="unidad_medida_resultante_id" name="unidad_medida_resultante_id" class="form-select @error('unidad_medida_resultante_id') is-invalid @enderror" required>
             <option value="">Selecciona unidad</option>
             @foreach ($unidades as $unidad)
-                <option value="{{ $unidad->id }}" @selected(old('unidad_medida_resultante_id', $reglaConversion->unidad_medida_resultante_id) == $unidad->id)>
+                <option value="{{ $unidad->id }}" @selected(old('unidad_medida_resultante_id', $reglaConversion->unidad_salida_id) == $unidad->id)>
                     {{ $unidad->nombre }}
                 </option>
             @endforeach
@@ -73,25 +73,21 @@
     </div>
 
     <div class="col-md-4">
-        <x-crud.form-input name="rendimiento_minimo" label="Rendimiento Mínimo" type="number" step="0.01" :value="$reglaConversion->rendimiento_minimo" placeholder="0.00" required />
+        <x-crud.form-input name="rendimiento_minimo" label="Rendimiento Mínimo" type="number" step="0.01" :value="$reglaConversion->rendimiento_min" placeholder="0.00" required />
     </div>
 
     <div class="col-md-4">
-        <x-crud.form-input name="rendimiento_maximo" label="Rendimiento Máximo" type="number" step="0.01" :value="$reglaConversion->rendimiento_maximo" placeholder="0.00" required />
+        <x-crud.form-input name="rendimiento_maximo" label="Rendimiento Máximo" type="number" step="0.01" :value="$reglaConversion->rendimiento_max" placeholder="0.00" required />
     </div>
 
     <div class="col-md-4">
         <label for="tipo_conversion" class="form-label fw-semibold">Tipo de Conversión</label>
         <select id="tipo_conversion" name="tipo_conversion" class="form-select @error('tipo_conversion') is-invalid @enderror" required>
-            <option value="Estática" @selected(old('tipo_conversion', $reglaConversion->tipo_conversion) == 'Estática')>Estática</option>
-            <option value="Variable" @selected(old('tipo_conversion', $reglaConversion->tipo_conversion) == 'Variable')>Variable</option>
+            @php $tipoActual = mb_strtolower((string) old('tipo_conversion', $reglaConversion->tipo_conversion)); @endphp
+            <option value="estatica" @selected(in_array($tipoActual, ['estatica', 'estática'], true))>Estática</option>
+            <option value="variable" @selected($tipoActual === 'variable')>Variable</option>
         </select>
         @error('tipo_conversion') <div class="invalid-feedback">{{ $message }}</div> @enderror
-    </div>
-
-    <div class="col-md-12">
-        <label for="observacion" class="form-label fw-semibold">Observación General</label>
-        <textarea name="observacion" id="observacion" class="form-control" rows="2" placeholder="Notas sobre esta regla...">{{ old('observacion', $reglaConversion->observacion) }}</textarea>
     </div>
 
     <!-- Receta de Conversión (Detalles) -->
@@ -143,7 +139,7 @@
                 <div class="row g-2 mb-2 detalle-row align-items-end">
                     <div class="col-md-4">
                         <label class="form-label small text-muted">Insumo</label>
-                        <select name="detalles[0][insumo_id]" class="form-select" required>
+                        <select name="detalles[0][insumo_id]" class="form-select">
                             <option value="">Seleccionar</option>
                             @foreach ($insumos as $insumo)
                                 <option value="{{ $insumo->id }}">{{ $insumo->nombre }}</option>
@@ -152,11 +148,11 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small text-muted">Cantidad</label>
-                        <input type="number" step="0.01" name="detalles[0][cantidad]" class="form-control" required>
+                        <input type="number" step="0.01" name="detalles[0][cantidad]" class="form-control">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small text-muted">Unidad</label>
-                        <select name="detalles[0][unidad_medida_id]" class="form-select" required>
+                        <select name="detalles[0][unidad_medida_id]" class="form-select">
                             <option value="">Unidad</option>
                             @foreach ($unidades as $unidad)
                                 <option value="{{ $unidad->id }}">{{ $unidad->nombre }}</option>
@@ -198,6 +194,7 @@
             
             newRow.querySelectorAll('input').forEach(i => i.value = '');
             newRow.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+            newRow.querySelectorAll('[required]').forEach(f => f.removeAttribute('required'));
             
             newRow.querySelectorAll('[name*="detalles["]').forEach(field => {
                 const name = field.name;

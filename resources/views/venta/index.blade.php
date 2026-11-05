@@ -60,8 +60,8 @@
                                     <form action="{{ route('ventas.destroy', $venta) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta venta?')">
-                                            <i class="fa-solid fa-trash me-1"></i> Eliminar
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de anular esta venta? El stock de los productos será repuesto.')">
+                                            <i class="fa-solid fa-ban me-1"></i> Eliminar
                                         </button>
                                     </form>
                                 </div>

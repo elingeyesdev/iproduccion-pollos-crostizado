@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\OrdenProduccionApiController;
 use App\Http\Controllers\Api\ProduccionApiController;
 use App\Http\Controllers\Api\ProductoApiController;
 use App\Http\Controllers\Api\ReglaConversionApiController;
+use App\Http\Controllers\Api\ReporteApiController;
 use App\Http\Controllers\Api\RoleAssignmentApiController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\TipoProductoApiController;
@@ -39,13 +40,15 @@ Route::name('api.')->middleware('auth:sanctum')->group(function () {
     Route::get('asignacion-roles', [RoleAssignmentApiController::class, 'index']);
     Route::post('asignacion-roles', [RoleAssignmentApiController::class, 'store']);
     Route::get('asignacion-roles/{assignment}', [RoleAssignmentApiController::class, 'show']);
+    Route::put('asignacion-roles/{assignment}', [RoleAssignmentApiController::class, 'update']);
+    Route::delete('asignacion-roles/{assignment}', [RoleAssignmentApiController::class, 'destroy']);
 
     // Parametrización
     Route::apiResource('clientes', ClienteApiController::class);
     Route::apiResource('unidad-medidas', UnidadMedidaApiController::class);
     Route::apiResource('insumos', InsumoApiController::class);
     Route::apiResource('productos', ProductoApiController::class);
-    Route::apiResource('componentes-producto', ComponenteProductoApiController::class)->only(['index', 'show', 'store', 'update'])->parameters(['componentes-producto' => 'producto']);
+    Route::apiResource('componentes-producto', ComponenteProductoApiController::class)->only(['index', 'show', 'store', 'update', 'destroy'])->parameters(['componentes-producto' => 'producto']);
     Route::apiResource('regla-conversion', ReglaConversionApiController::class);
     Route::apiResource('tipo-productos', TipoProductoApiController::class);
 
@@ -60,4 +63,14 @@ Route::name('api.')->middleware('auth:sanctum')->group(function () {
     Route::get('producciones/{produccion}', [ProduccionApiController::class, 'show']);
     Route::apiResource('mermas', MermaController::class);
     Route::apiResource('ventas', VentaApiController::class);
+
+    // Reportes
+    Route::prefix('reportes')->middleware('no.store.sensitive')->group(function () {
+        Route::get('insumos', [ReporteApiController::class, 'insumos']);
+        Route::get('productos', [ReporteApiController::class, 'productos']);
+        Route::get('stock', [ReporteApiController::class, 'stock']);
+        Route::get('ventas-mensual', [ReporteApiController::class, 'ventasMensual']);
+        Route::get('produccion-mensual', [ReporteApiController::class, 'produccionMensual']);
+        Route::get('indicadores', [ReporteApiController::class, 'indicadores']);
+    });
 });

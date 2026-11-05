@@ -1,11 +1,11 @@
 <?php
 
 return [
-    'default' => 'default',
+    'default' => 'krosty',
     'documentations' => [
-        'default' => [
+        'krosty' => [
             'api' => [
-                'title' => 'L5 Swagger UI',
+                'title' => 'API Pollos Krosty',
             ],
 
             'routes' => [

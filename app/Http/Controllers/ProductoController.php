@@ -8,6 +8,7 @@ use App\Models\TipoProducto;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProductoController extends Controller
@@ -42,8 +43,12 @@ class ProductoController extends Controller
 
     public function store(ProductoRequest $request): RedirectResponse
     {
-        $data = $request->validated();
+        $data = $request->safe()->except(['imagen', 'quitar_imagen']);
         $data['cantidad_actual'] = 0;
+
+        if ($request->hasFile('imagen')) {
+            $data['imagen'] = $request->file('imagen')->store('productos', 'public');
+        }
 
         Producto::create($data);
 
@@ -55,7 +60,8 @@ class ProductoController extends Controller
     {
         $producto->load([
             'tipoProducto:id,nombre',
-            'componentes' => fn ($query) => $query->where('estado', 1)->orderBy('nombre'),
+            'ingredientes' => fn ($query) => $query->with('tipoProducto:id,nombre')->orderBy('nombre'),
+            'esParteDe' => fn ($query) => $query->orderBy('nombre'),
         ]);
 
         return view('producto.show', compact('producto'));
@@ -69,7 +75,20 @@ class ProductoController extends Controller
 
     public function update(ProductoRequest $request, Producto $producto): RedirectResponse
     {
-        $producto->update($request->validated());
+        $data = $request->safe()->except(['imagen', 'quitar_imagen']);
+
+        if ($request->hasFile('imagen') || $request->boolean('quitar_imagen')) {
+            $anterior = $producto->imagen;
+            $data['imagen'] = $request->hasFile('imagen')
+                ? $request->file('imagen')->store('productos', 'public')
+                : null;
+        }
+
+        $producto->update($data);
+
+        if (isset($anterior)) {
+            Storage::disk('public')->delete($anterior);
+        }
 
         return Redirect::route('productos.index')
             ->with('success', 'Producto actualizado correctamente.');

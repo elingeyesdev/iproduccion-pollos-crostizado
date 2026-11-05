@@ -12,8 +12,14 @@ return new class extends Migration
             return;
         }
 
-        Schema::table('producciones', function (Blueprint $table) {
-            $table->dropForeign(['orden_produccion_id']);
+        // La FK solo existe si la columna se creó con down(); la migración de creación no la define.
+        $tieneForeignKey = collect(Schema::getForeignKeys('producciones'))
+            ->contains(fn (array $fk) => $fk['columns'] === ['orden_produccion_id']);
+
+        Schema::table('producciones', function (Blueprint $table) use ($tieneForeignKey) {
+            if ($tieneForeignKey) {
+                $table->dropForeign(['orden_produccion_id']);
+            }
             $table->dropIndex(['orden_produccion_id']);
             $table->dropColumn('orden_produccion_id');
         });

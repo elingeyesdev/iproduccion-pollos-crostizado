@@ -6,43 +6,4749 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Obtener el usuario autenticado",
+                "operationId": "7aa5873fe84be1dccf681ea05e065517",
+                "responses": {
+                    "200": {
+                        "description": "Usuario autenticado obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Iniciar sesión y obtener token",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@krosty.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secreto123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Inicio de sesión correcto",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abcdef123456"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciales incorrectas"
+                    },
+                    "429": {
+                        "description": "Demasiados intentos"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Cerrar sesión (revocar token actual)",
+                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "responses": {
+                    "200": {
+                        "description": "Sesión cerrada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/clientes": {
             "get": {
                 "tags": [
                     "Clientes"
                 ],
-                "summary": "Listar clientes",
+                "summary": "Listar clientes activos",
                 "operationId": "3ab1bd0bc1c6d13508917ec1f71f52f5",
                 "responses": {
                     "200": {
                         "description": "Clientes obtenidos correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Registrar un cliente",
+                "operationId": "22be7ccdd26efb899a619bd891090f4f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "telefono"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Juan Pérez",
+                                        "maxLength": 255
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "76543210",
+                                        "maxLength": 255
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true,
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cliente creado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
-        "/api/componente-productos": {
+        "/api/clientes/{cliente}": {
             "get": {
                 "tags": [
-                    "Componentes de Producto"
+                    "Clientes"
                 ],
-                "summary": "Listar componentes de producto",
-                "operationId": "fcf3091d3b365c96e105b6741f8e1615",
+                "summary": "Obtener un cliente",
+                "operationId": "c0fd13ba043d2ca99f23be8586cdd267",
+                "parameters": [
+                    {
+                        "name": "cliente",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Componentes de producto obtenidos correctamente"
+                        "description": "Cliente obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Actualizar un cliente",
+                "operationId": "02e774a78bba9aee8339fcb5bba74ea9",
+                "parameters": [
+                    {
+                        "name": "cliente",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "telefono"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Juan Pérez",
+                                        "maxLength": 255
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "76543210",
+                                        "maxLength": 255
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true,
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cliente actualizado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Eliminar (desactivar) un cliente",
+                "operationId": "34091ea4b00349dde0aad1b503809bdb",
+                "parameters": [
+                    {
+                        "name": "cliente",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cliente eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/componentes-producto": {
+            "get": {
+                "tags": [
+                    "Composición de productos"
+                ],
+                "summary": "Listar productos activos con su composición",
+                "operationId": "4d63084486cc9c0479038e959c08a67d",
+                "responses": {
+                    "200": {
+                        "description": "Productos con ingredientes obtenidos correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Composición de productos"
+                ],
+                "summary": "Registrar la composición de un producto",
+                "description": "Reemplaza los ingredientes activos del producto indicado. Un producto no puede incluirse a sí mismo como ingrediente.",
+                "operationId": "3322feed7b281584e254392e0062d886",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "producto_id"
+                                ],
+                                "properties": {
+                                    "producto_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "ingredientes": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "id",
+                                                "cantidad"
+                                            ],
+                                            "properties": {
+                                                "id": {
+                                                    "description": "ID del producto ingrediente",
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "cantidad": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1.5,
+                                                    "minimum": 0.01
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Composición registrada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/componentes-producto/{producto}": {
+            "get": {
+                "tags": [
+                    "Composición de productos"
+                ],
+                "summary": "Obtener la composición de un producto",
+                "operationId": "59037d91ec84e6cb8d7ccf3947431fa5",
+                "parameters": [
+                    {
+                        "name": "producto",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Composición obtenida correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Composición de productos"
+                ],
+                "summary": "Actualizar la composición de un producto",
+                "description": "Reemplaza los ingredientes activos del producto. Un producto no puede incluirse a sí mismo como ingrediente.",
+                "operationId": "ead83c4a46e04a6c235a44f4a3e80a4d",
+                "parameters": [
+                    {
+                        "name": "producto",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ingredientes": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "id",
+                                                "cantidad"
+                                            ],
+                                            "properties": {
+                                                "id": {
+                                                    "description": "ID del producto ingrediente",
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "cantidad": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 2,
+                                                    "minimum": 0.01
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Composición actualizada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Composición de productos"
+                ],
+                "summary": "Eliminar (desactivar) la composición de un producto",
+                "operationId": "ed82c92af04fee4ea14d2299c0c8c8ac",
+                "parameters": [
+                    {
+                        "name": "producto",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Composición eliminada"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/ingreso-bebidas": {
+            "get": {
+                "tags": [
+                    "Ingresos de bebidas"
+                ],
+                "summary": "Listar ingresos de bebidas",
+                "description": "Devuelve los ingresos de bebidas activos con sus productos, ordenados por fecha de ingreso descendente.",
+                "operationId": "aa2a2dcad17e69f4b328b6bc1232fa24",
+                "responses": {
+                    "200": {
+                        "description": "Ingresos de bebidas obtenidos correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ingresos de bebidas"
+                ],
+                "summary": "Registrar ingreso de bebidas",
+                "description": "Crea un lote de ingreso de bebidas y suma la cantidad ingresada al stock (cantidad_actual) de cada producto. Si no se envía nombre, se genera automáticamente (LOTE-BEB-YYYY-MM-NNN).",
+                "operationId": "7c37aa67d71a0d638f75a84be11fcd8c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fecha_ingreso",
+                                    "productos"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "LOTE-BEB-2026-10-001",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Ingreso semanal de gaseosas",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "fecha_ingreso": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-03"
+                                    },
+                                    "productos": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "producto_id",
+                                                "cantidad_ingresa",
+                                                "precio"
+                                            ],
+                                            "properties": {
+                                                "producto_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "cantidad_ingresa": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 24,
+                                                    "minimum": 0.01
+                                                },
+                                                "precio": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 8.5,
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ingreso de bebidas registrado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/ingreso-bebidas/{ingreso_bebida}": {
+            "get": {
+                "tags": [
+                    "Ingresos de bebidas"
+                ],
+                "summary": "Ver ingreso de bebidas",
+                "operationId": "3dc636927b3acc619ed76f70c399ffd1",
+                "parameters": [
+                    {
+                        "name": "ingreso_bebida",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ingreso de bebidas obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Ingresos de bebidas"
+                ],
+                "summary": "Actualizar ingreso de bebidas",
+                "description": "Revierte el stock del ingreso anterior, reemplaza el detalle de productos y vuelve a sumar las nuevas cantidades al stock.",
+                "operationId": "1e9892d47e888232e3c8c5bd8efdcab8",
+                "parameters": [
+                    {
+                        "name": "ingreso_bebida",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fecha_ingreso",
+                                    "productos"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "LOTE-BEB-2026-10-001",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Ingreso semanal de gaseosas",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "fecha_ingreso": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-03"
+                                    },
+                                    "productos": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "producto_id",
+                                                "cantidad_ingresa",
+                                                "precio"
+                                            ],
+                                            "properties": {
+                                                "producto_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "cantidad_ingresa": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 30,
+                                                    "minimum": 0.01
+                                                },
+                                                "precio": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 8.5,
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ingreso de bebidas actualizado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ingresos de bebidas"
+                ],
+                "summary": "Eliminar ingreso de bebidas",
+                "description": "Baja lógica (estado = 0) del ingreso y descuenta del stock de cada producto la cantidad que había ingresado.",
+                "operationId": "f803bdac6483c628a93dd2f3b7a6561e",
+                "parameters": [
+                    {
+                        "name": "ingreso_bebida",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ingreso de bebida eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/ingreso-insumos": {
+            "get": {
+                "tags": [
+                    "Ingresos de insumos"
+                ],
+                "summary": "Listar ingresos de insumos activos con sus detalles",
+                "operationId": "4e515222df93f7e1bb45dc8a02b0f2fa",
+                "responses": {
+                    "200": {
+                        "description": "Ingresos de insumos obtenidos correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ingresos de insumos"
+                ],
+                "summary": "Registrar un ingreso de insumos",
+                "description": "Crea el ingreso con sus detalles e incrementa el stock_actual de cada insumo.",
+                "operationId": "68dabba665eb71ee7aab19489b1533c3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fecha_ingreso",
+                                    "detalles"
+                                ],
+                                "properties": {
+                                    "fecha_ingreso": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-03"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Compra semanal al proveedor",
+                                        "nullable": true
+                                    },
+                                    "detalles": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "insumo_id",
+                                                "cantidad",
+                                                "precio_unitario"
+                                            ],
+                                            "properties": {
+                                                "insumo_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "cantidad": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 25,
+                                                    "minimum": 0.01
+                                                },
+                                                "precio_unitario": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 18.5,
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ingreso de insumos creado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/ingreso-insumos/{ingreso_insumo}": {
+            "get": {
+                "tags": [
+                    "Ingresos de insumos"
+                ],
+                "summary": "Obtener un ingreso de insumos con sus detalles",
+                "operationId": "917795499e4596be2d87d345915ef570",
+                "parameters": [
+                    {
+                        "name": "ingreso_insumo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ingreso de insumos obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Ingresos de insumos"
+                ],
+                "summary": "Actualizar un ingreso de insumos",
+                "description": "Reemplaza los detalles del ingreso y aplica al stock solo la diferencia neta por insumo. Falla con 422 si el stock ya fue consumido en producción.",
+                "operationId": "fa2d54c3f7c1bb6ac799b0fdd79ea423",
+                "parameters": [
+                    {
+                        "name": "ingreso_insumo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fecha_ingreso",
+                                    "detalles"
+                                ],
+                                "properties": {
+                                    "fecha_ingreso": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-03"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Corrección de cantidades",
+                                        "nullable": true
+                                    },
+                                    "detalles": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "insumo_id",
+                                                "cantidad",
+                                                "precio_unitario"
+                                            ],
+                                            "properties": {
+                                                "insumo_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "cantidad": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 20,
+                                                    "minimum": 0.01
+                                                },
+                                                "precio_unitario": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 18.5,
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ingreso de insumos actualizado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación o stock insuficiente para revertir el ingreso"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ingresos de insumos"
+                ],
+                "summary": "Eliminar (desactivar) un ingreso de insumos",
+                "description": "Revierte el stock de los insumos ingresados. Falla con 422 si el stock ya fue consumido en producción.",
+                "operationId": "4e48ad9fbb424af87e2c0dee72f28d59",
+                "parameters": [
+                    {
+                        "name": "ingreso_insumo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ingreso de insumos eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Stock insuficiente para revertir el ingreso"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/insumos": {
+            "get": {
+                "tags": [
+                    "Insumos"
+                ],
+                "summary": "Listar insumos activos",
+                "operationId": "044d070e702cbb2fbde74c98082ed601",
+                "responses": {
+                    "200": {
+                        "description": "Insumos obtenidos correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Insumos"
+                ],
+                "summary": "Registrar un insumo",
+                "operationId": "974b232e51b9504b3c6d6a5de39e9d50",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "unidad_medida_id",
+                                    "stock_actual",
+                                    "stock_minimo"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Pechuga de pollo",
+                                        "maxLength": 150
+                                    },
+                                    "unidad_medida_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "stock_actual": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50.5,
+                                        "minimum": 0
+                                    },
+                                    "stock_minimo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10,
+                                        "minimum": 0
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true,
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Insumo creado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/insumos/{insumo}": {
+            "get": {
+                "tags": [
+                    "Insumos"
+                ],
+                "summary": "Obtener un insumo",
+                "operationId": "0e9a333bcfa37557dfa2aa8763408d46",
+                "parameters": [
+                    {
+                        "name": "insumo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Insumo obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Insumos"
+                ],
+                "summary": "Actualizar un insumo",
+                "operationId": "f71a0f89547386ee020734d9b6258b71",
+                "parameters": [
+                    {
+                        "name": "insumo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "unidad_medida_id",
+                                    "stock_actual",
+                                    "stock_minimo"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Pechuga de pollo",
+                                        "maxLength": 150
+                                    },
+                                    "unidad_medida_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "stock_actual": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 45,
+                                        "minimum": 0
+                                    },
+                                    "stock_minimo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10,
+                                        "minimum": 0
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true,
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Insumo actualizado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Insumos"
+                ],
+                "summary": "Eliminar (desactivar) un insumo",
+                "operationId": "5596d1b227b4309775de2c8a69778255",
+                "parameters": [
+                    {
+                        "name": "insumo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Insumo eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/mermas": {
+            "get": {
+                "tags": [
+                    "Mermas"
+                ],
+                "summary": "Listar mermas",
+                "description": "Devuelve las mermas activas con su producción asociada.",
+                "operationId": "743e785ea76fc82ef9a8e8ea969bf070",
+                "responses": {
+                    "200": {
+                        "description": "Mermas obtenidas correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Mermas"
+                ],
+                "summary": "Registrar merma",
+                "operationId": "e11efcf8e3bad232608ce058e6ea5d18",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "produccion_id",
+                                    "cantidad"
+                                ],
+                                "properties": {
+                                    "produccion_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "cantidad": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1.5,
+                                        "minimum": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Merma registrada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/mermas/{merma}": {
+            "get": {
+                "tags": [
+                    "Mermas"
+                ],
+                "summary": "Ver merma",
+                "operationId": "a8f073d5ffcb9ebf868bcb6c7352f49a",
+                "parameters": [
+                    {
+                        "name": "merma",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Merma obtenida correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Mermas"
+                ],
+                "summary": "Actualizar merma",
+                "operationId": "2068a3551b98a6d23d725776e91e650b",
+                "parameters": [
+                    {
+                        "name": "merma",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "produccion_id",
+                                    "cantidad"
+                                ],
+                                "properties": {
+                                    "produccion_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "cantidad": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2,
+                                        "minimum": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Merma actualizada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Mermas"
+                ],
+                "summary": "Eliminar merma",
+                "description": "Baja lógica: marca la merma con estado = 0. Responde sin contenido.",
+                "operationId": "72904196d0c3fb891159bcc3e9553fb5",
+                "parameters": [
+                    {
+                        "name": "merma",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Merma eliminada"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/orden-producciones": {
+            "get": {
+                "tags": [
+                    "Órdenes de producción"
+                ],
+                "summary": "Listar órdenes de producción",
+                "description": "Listado paginado (10 por página) con conteo de insumos y de insumos pendientes de producción. Permite buscar por número de orden o fecha programada.",
+                "operationId": "46f23b214389cfec736aa58276a8c419",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por número de orden o fecha programada",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "OR-PRO-2026-10"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Órdenes de producción obtenidas correctamente (paginadas)"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Órdenes de producción"
+                ],
+                "summary": "Crear orden de producción",
+                "description": "Crea la orden con sus insumos planificados. Si no se envía numero_orden, se genera automáticamente (OR-PRO-YYYY-MM-NNNN). No modifica stock.",
+                "operationId": "cbb998909a8b9701545f6d51a315773b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fecha_programada",
+                                    "regla_conversion_id",
+                                    "insumos"
+                                ],
+                                "properties": {
+                                    "numero_orden": {
+                                        "type": "string",
+                                        "example": "OR-PRO-2026-10-0001",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "fecha_programada": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-05"
+                                    },
+                                    "regla_conversion_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "insumos": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "insumo_id",
+                                                "cantidad"
+                                            ],
+                                            "properties": {
+                                                "insumo_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "cantidad": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 25.5,
+                                                    "minimum": 0.01
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Orden de producción creada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/orden-producciones/{orden_produccione}": {
+            "get": {
+                "tags": [
+                    "Órdenes de producción"
+                ],
+                "summary": "Ver orden de producción",
+                "description": "Devuelve la orden con sus insumos, la receta (regla de conversión) y el conteo de insumos pendientes.",
+                "operationId": "0a7283d9dcb360888f704e1706e2ee50",
+                "parameters": [
+                    {
+                        "name": "orden_produccione",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orden de producción obtenida correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Órdenes de producción"
+                ],
+                "summary": "Actualizar orden de producción",
+                "description": "Actualiza los datos de la orden y reemplaza por completo la lista de insumos.",
+                "operationId": "fcd668405d92643102a9c3ebf1765190",
+                "parameters": [
+                    {
+                        "name": "orden_produccione",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fecha_programada",
+                                    "regla_conversion_id",
+                                    "insumos"
+                                ],
+                                "properties": {
+                                    "numero_orden": {
+                                        "type": "string",
+                                        "example": "OR-PRO-2026-10-0001",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "fecha_programada": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-06"
+                                    },
+                                    "regla_conversion_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "insumos": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "insumo_id",
+                                                "cantidad"
+                                            ],
+                                            "properties": {
+                                                "insumo_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "cantidad": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 30,
+                                                    "minimum": 0.01
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Orden de producción actualizada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Órdenes de producción"
+                ],
+                "summary": "Eliminar orden de producción",
+                "description": "Baja lógica: marca la orden con estado = 0.",
+                "operationId": "43a6c9bb1fdeaea498fa495b0d2819f4",
+                "parameters": [
+                    {
+                        "name": "orden_produccione",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orden de producción eliminada"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/producciones/pendientes": {
+            "get": {
+                "tags": [
+                    "Producción"
+                ],
+                "summary": "Listar órdenes pendientes de producción",
+                "description": "Órdenes de producción que todavía tienen insumos pendientes de ejecutar. Paginado (10 por página); permite buscar por número de orden.",
+                "operationId": "69efbca1a241931610598946a142d1de",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por número de orden",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "OR-PRO-2026-10"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Órdenes pendientes obtenidas correctamente (paginadas)"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/producciones/lote/{ordenProduccion}": {
+            "get": {
+                "tags": [
+                    "Producción"
+                ],
+                "summary": "Obtener datos para ejecutar el lote de una orden",
+                "description": "Devuelve la orden, su receta (regla de conversión), el producto resultante, los insumos pendientes y el indicador lote_ejecutable.",
+                "operationId": "50826702422657f4a8f152f094a1d3e8",
+                "parameters": [
+                    {
+                        "name": "ordenProduccion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del lote obtenidos correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "orden_produccion": {
+                                            "type": "object"
+                                        },
+                                        "regla": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "producto": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "detalles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "lote_ejecutable": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Producción"
+                ],
+                "summary": "Ejecutar la producción del lote de una orden",
+                "description": "Crea un registro de producción por cada insumo pendiente de la orden, descuenta el stock (stock_actual) de cada insumo consumido y suma la cantidad obtenida al stock (cantidad_actual) del producto resultante. La cantidad obtenida debe estar dentro del rango de rendimiento de la receta.",
+                "operationId": "e96f43ae19c655031dd706eabc92a445",
+                "parameters": [
+                    {
+                        "name": "ordenProduccion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cantidad_obtenida"
+                                ],
+                                "properties": {
+                                    "cantidad_obtenida": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 40,
+                                        "minimum": 0.01
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Producción ejecutada correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Producción ejecutada correctamente. Se descontaron 2 insumo(s) y se generaron 40.00 unidades de Pollo frito."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Stock insuficiente de algún insumo"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación (orden sin receta, sin producto resultante, sin insumos pendientes o cantidad fuera del rango de rendimiento)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/producciones": {
+            "get": {
+                "tags": [
+                    "Producción"
+                ],
+                "summary": "Listar historial de producciones",
+                "description": "Producciones ejecutadas activas, paginadas (10 por página); permite buscar por número de orden.",
+                "operationId": "4b9b2a154427a61924512cd2e4038c87",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por número de orden",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "OR-PRO-2026-10"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Producciones obtenidas correctamente (paginadas)"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/producciones/{produccion}": {
+            "get": {
+                "tags": [
+                    "Producción"
+                ],
+                "summary": "Ver producción",
+                "description": "Devuelve la producción con su receta, producto, orden de producción, insumo y mermas.",
+                "operationId": "c40dc554ba2c03dfd7bd434c8842bf7b",
+                "parameters": [
+                    {
+                        "name": "produccion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Producción obtenida correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/productos": {
+            "get": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Listar productos activos",
+                "operationId": "786d74243fbf30dace82b25a638113b4",
+                "responses": {
+                    "200": {
+                        "description": "Productos obtenidos correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Registrar un producto",
+                "operationId": "fc219fac91d809b8de37c41b5bf9f22a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "precio",
+                                    "tipo_producto_id",
+                                    "cantidad_actual"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Pollo broaster 1/4",
+                                        "maxLength": 255
+                                    },
+                                    "precio": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 25.5,
+                                        "minimum": 0
+                                    },
+                                    "tipo_producto_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "cantidad_actual": {
+                                        "type": "integer",
+                                        "example": 20,
+                                        "minimum": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Producto creado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/productos/{producto}": {
+            "get": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Obtener un producto",
+                "operationId": "eeaac99c7b7d7e2ef13b45592b0c3cb4",
+                "parameters": [
+                    {
+                        "name": "producto",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Producto obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Actualizar un producto",
+                "operationId": "3476bdd555f6ee39ba7fe12a8d48f867",
+                "parameters": [
+                    {
+                        "name": "producto",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "precio",
+                                    "tipo_producto_id",
+                                    "cantidad_actual"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Pollo broaster 1/4",
+                                        "maxLength": 255
+                                    },
+                                    "precio": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 27,
+                                        "minimum": 0
+                                    },
+                                    "tipo_producto_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "cantidad_actual": {
+                                        "type": "integer",
+                                        "example": 15,
+                                        "minimum": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Producto actualizado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Eliminar (desactivar) un producto",
+                "operationId": "6ac14620c02a5fee41b3e626f8037665",
+                "parameters": [
+                    {
+                        "name": "producto",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Producto eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/regla-conversion": {
+            "get": {
+                "tags": [
+                    "Reglas de conversión"
+                ],
+                "summary": "Listar reglas de conversión activas (paginado)",
+                "operationId": "042e6d0729ea480b10b814afadec1593",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por nombre de insumo o de producto resultante",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "pollo"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página (10 registros por página)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reglas de conversión obtenidas correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Reglas de conversión"
+                ],
+                "summary": "Registrar una regla de conversión",
+                "description": "La cantidad de entrada se fija siempre en 1. Las unidades de entrada/resultante son obligatorias cuando la tabla reglas_conversion tiene las columnas unidad_entrada_id/unidad_salida_id.",
+                "operationId": "d485c7a30aa116f9ec6dfb0f13bd0077",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "insumo_id",
+                                    "producto_id",
+                                    "rendimiento_minimo",
+                                    "rendimiento_maximo",
+                                    "tipo_conversion"
+                                ],
+                                "properties": {
+                                    "insumo_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "producto_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "rendimiento_minimo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 8,
+                                        "minimum": 0
+                                    },
+                                    "rendimiento_maximo": {
+                                        "description": "Debe ser mayor o igual al rendimiento mínimo",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10,
+                                        "minimum": 0
+                                    },
+                                    "tipo_conversion": {
+                                        "type": "string",
+                                        "example": "variable",
+                                        "enum": [
+                                            "estatica",
+                                            "variable",
+                                            "Estática",
+                                            "Variable"
+                                        ]
+                                    },
+                                    "unidad_medida_entrada_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "unidad_medida_resultante_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "detalles": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "insumo_id",
+                                                "cantidad",
+                                                "unidad_medida_id"
+                                            ],
+                                            "properties": {
+                                                "insumo_id": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                },
+                                                "cantidad": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 0.25,
+                                                    "minimum": 0.001
+                                                },
+                                                "unidad_medida_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "observacion": {
+                                                    "type": "string",
+                                                    "example": "Harina para el apanado",
+                                                    "nullable": true,
+                                                    "maxLength": 255
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Regla de conversión creada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/regla-conversion/{regla_conversion}": {
+            "get": {
+                "tags": [
+                    "Reglas de conversión"
+                ],
+                "summary": "Obtener una regla de conversión con sus detalles",
+                "operationId": "355a9a096325ef8cbc072220f262d2a0",
+                "parameters": [
+                    {
+                        "name": "regla_conversion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Regla de conversión obtenida correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Reglas de conversión"
+                ],
+                "summary": "Actualizar una regla de conversión",
+                "description": "Reemplaza los detalles (receta) de la regla. La cantidad de entrada se fija siempre en 1.",
+                "operationId": "2d436d129966363518a00939dabdcd62",
+                "parameters": [
+                    {
+                        "name": "regla_conversion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "insumo_id",
+                                    "producto_id",
+                                    "rendimiento_minimo",
+                                    "rendimiento_maximo",
+                                    "tipo_conversion"
+                                ],
+                                "properties": {
+                                    "insumo_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "producto_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "rendimiento_minimo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 7.5,
+                                        "minimum": 0
+                                    },
+                                    "rendimiento_maximo": {
+                                        "description": "Debe ser mayor o igual al rendimiento mínimo",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 9,
+                                        "minimum": 0
+                                    },
+                                    "tipo_conversion": {
+                                        "type": "string",
+                                        "example": "estatica",
+                                        "enum": [
+                                            "estatica",
+                                            "variable",
+                                            "Estática",
+                                            "Variable"
+                                        ]
+                                    },
+                                    "unidad_medida_entrada_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "unidad_medida_resultante_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "detalles": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "insumo_id",
+                                                "cantidad",
+                                                "unidad_medida_id"
+                                            ],
+                                            "properties": {
+                                                "insumo_id": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                },
+                                                "cantidad": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 0.3,
+                                                    "minimum": 0.001
+                                                },
+                                                "unidad_medida_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "observacion": {
+                                                    "type": "string",
+                                                    "example": null,
+                                                    "nullable": true,
+                                                    "maxLength": 255
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Regla de conversión actualizada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Reglas de conversión"
+                ],
+                "summary": "Eliminar (desactivar) una regla de conversión",
+                "operationId": "81c9f1d060b47647846ea01fd8b7d588",
+                "parameters": [
+                    {
+                        "name": "regla_conversion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Regla de conversión eliminada"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/insumos": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte de insumos",
+                "description": "Insumos activos con su stock y unidad de medida. Paginado (15 por página); permite buscar por nombre.",
+                "operationId": "ec4ceb0e8685fdd4f11a3a3e04007d86",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por nombre del insumo",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Pollo"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Insumos obtenidos correctamente (paginados)"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/productos": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte de productos",
+                "description": "Productos activos con su stock, precio y tipo. Paginado (15 por página); permite buscar por nombre.",
+                "operationId": "25862bcd60fe369295a8ea0f15f0282c",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por nombre del producto",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Porción"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Productos obtenidos correctamente (paginados)"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/stock": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte de stock",
+                "description": "Insumos con stock igual o menor al mínimo y todos los productos activos ordenados por menor stock.",
+                "operationId": "603d65d6fbf8e8280613622c42269460",
+                "responses": {
+                    "200": {
+                        "description": "Stock obtenido correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "insumos_bajo_minimo": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "productos": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/ventas-mensual": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte mensual de ventas",
+                "description": "Cantidad de ventas, monto total y productos vendidos del mes indicado (por defecto, el mes actual).",
+                "operationId": "413e3e76b46bc87f1b903935b56e935d",
+                "parameters": [
+                    {
+                        "name": "mes",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10,
+                            "maximum": 12,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "anio",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2026
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reporte de ventas obtenido correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "mes": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "anio": {
+                                            "type": "integer",
+                                            "example": 2026
+                                        },
+                                        "total_ventas": {
+                                            "type": "integer",
+                                            "example": 120
+                                        },
+                                        "total_monto": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 8450.5
+                                        },
+                                        "productos_vendidos": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "producto_nombre": {
+                                                        "type": "string"
+                                                    },
+                                                    "cantidad_total": {
+                                                        "type": "number"
+                                                    },
+                                                    "monto_total": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Mes o año inválido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/produccion-mensual": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Reporte mensual de producción",
+                "description": "Órdenes ejecutadas, insumos consumidos y productos obtenidos en el mes indicado (por defecto, el mes actual).",
+                "operationId": "b668cb5b0a04b41333cc165b29c90461",
+                "parameters": [
+                    {
+                        "name": "mes",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10,
+                            "maximum": 12,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "anio",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2026
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reporte de producción obtenido correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "mes": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "anio": {
+                                            "type": "integer",
+                                            "example": 2026
+                                        },
+                                        "total_ordenes": {
+                                            "type": "integer",
+                                            "example": 15
+                                        },
+                                        "insumos_consumidos": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "nombre": {
+                                                        "type": "string"
+                                                    },
+                                                    "cantidad_total": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "productos_obtenidos": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "nombre": {
+                                                        "type": "string"
+                                                    },
+                                                    "cantidad_total": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "total_cantidad_obtenida": {
+                                            "type": "number",
+                                            "example": 600
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Mes o año inválido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reportes/indicadores": {
+            "get": {
+                "tags": [
+                    "Reportes"
+                ],
+                "summary": "Indicadores del negocio",
+                "description": "KPIs de ventas, producción e inventario del rango indicado (por defecto, del inicio del mes hasta hoy), con su variación porcentual respecto al período anterior de igual duración. La variación es null cuando el período anterior vale 0.",
+                "operationId": "d255c54a250b07fc16ae5655bdee40c4",
+                "parameters": [
+                    {
+                        "name": "desde",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-10-01"
+                        }
+                    },
+                    {
+                        "name": "hasta",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-10-28"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Indicadores obtenidos correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "desde": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "hasta": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "ant_desde": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "ant_hasta": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "actual": {
+                                            "description": "ingresos, num_ventas, ticket_promedio, clientes_atendidos, descuentos, gasto_insumos, resultado_bruto, margen_bruto, cantidad_insumo, cantidad_obtenida, rendimiento, mermas, pct_merma, ordenes_programadas, ordenes_ejecutadas, cumplimiento",
+                                            "type": "object"
+                                        },
+                                        "anterior": {
+                                            "description": "Mismos campos que \"actual\" para el período anterior",
+                                            "type": "object"
+                                        },
+                                        "variaciones": {
+                                            "description": "Variación % por indicador (null si no hay base de comparación)",
+                                            "type": "object"
+                                        },
+                                        "serie_ventas": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "dia": {
+                                                        "type": "string",
+                                                        "format": "date"
+                                                    },
+                                                    "fecha": {
+                                                        "type": "string",
+                                                        "example": "28/10"
+                                                    },
+                                                    "monto": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "top_productos": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "top_clientes": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "metodos_pago": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "insumos_bajo_minimo": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "productos_sin_stock": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "valor_inventario": {
+                                            "type": "number"
+                                        },
+                                        "productos_sin_rotacion": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "ordenes_pendientes": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Fecha inválida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/asignacion-roles": {
+            "get": {
+                "tags": [
+                    "Asignación de roles"
+                ],
+                "summary": "Listar asignaciones de roles (paginado, 15 por página)",
+                "operationId": "4f1a67f877963dec6cb01f66974ed0a8",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Busca por nombre o email del usuario, o nombre del rol",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "admin"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Asignaciones obtenidas correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Asignación de roles"
+                ],
+                "summary": "Asignar un rol a un usuario",
+                "operationId": "f13f51efc754be9c8eb09a4d8c02c8b2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "role_id"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "role_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Rol asignado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/asignacion-roles/{assignment}": {
+            "get": {
+                "tags": [
+                    "Asignación de roles"
+                ],
+                "summary": "Obtener una asignación de rol",
+                "operationId": "6252493c349da5f5b1b8bdf3ff868fbb",
+                "parameters": [
+                    {
+                        "name": "assignment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Asignación obtenida correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Asignación de roles"
+                ],
+                "summary": "Cambiar el rol de una asignación",
+                "operationId": "b0ac3c454f8fb578e8c66d1c2203f727",
+                "parameters": [
+                    {
+                        "name": "assignment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "role_id"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "role_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Asignación actualizada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Asignación de roles"
+                ],
+                "summary": "Revocar una asignación de rol",
+                "operationId": "928ca77a76ebe41d3c444bdbb5e39496",
+                "parameters": [
+                    {
+                        "name": "assignment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Asignación eliminada"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/roles": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Listar roles activos con sus permisos",
+                "operationId": "ca86f0a206144dfbd695b749b4b28f9d",
+                "responses": {
+                    "200": {
+                        "description": "Roles obtenidos correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Registrar un rol con permisos",
+                "operationId": "341b8b162b61267c7bd187500aea5bc4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "guard_name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Supervisor de producción",
+                                        "maxLength": 100
+                                    },
+                                    "guard_name": {
+                                        "type": "string",
+                                        "example": "web",
+                                        "enum": [
+                                            "web",
+                                            "api"
+                                        ]
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "ver produccion",
+                                            "crear produccion"
+                                        ],
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Rol creado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación o rol ya existente para el guard indicado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/roles/{role}": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Obtener un rol con sus permisos",
+                "operationId": "79e8579adc7690aea7c2631b04ca1024",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rol obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Actualizar un rol y sus permisos",
+                "operationId": "90bac6ebb3dc04cb2ad408a76a302b92",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "guard_name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Supervisor de producción",
+                                        "maxLength": 100
+                                    },
+                                    "guard_name": {
+                                        "type": "string",
+                                        "example": "web",
+                                        "enum": [
+                                            "web",
+                                            "api"
+                                        ]
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "ver produccion",
+                                            "crear produccion"
+                                        ],
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Rol actualizado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Eliminar (desactivar) un rol",
+                "operationId": "8f8cc93cb10c38b95b6d0b4482963660",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rol eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/tipo-productos": {
+            "get": {
+                "tags": [
+                    "Tipos de producto"
+                ],
+                "summary": "Listar tipos de producto activos",
+                "operationId": "ff2c582dc57bc0127bc9fb929ef55fbe",
+                "responses": {
+                    "200": {
+                        "description": "Tipos de producto obtenidos correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tipos de producto"
+                ],
+                "summary": "Registrar un tipo de producto",
+                "operationId": "66a9365467aa34c505b0a88b5a9e40a4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Combos",
+                                        "maxLength": 255
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Combos de pollo con acompañamientos",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tipo de producto creado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/tipo-productos/{tipo_producto}": {
+            "get": {
+                "tags": [
+                    "Tipos de producto"
+                ],
+                "summary": "Obtener un tipo de producto",
+                "operationId": "65dbe87988703bf42ea9026d5903a26d",
+                "parameters": [
+                    {
+                        "name": "tipo_producto",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tipo de producto obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Tipos de producto"
+                ],
+                "summary": "Actualizar un tipo de producto",
+                "operationId": "a7097e1af659d3a987dbc716d1b41574",
+                "parameters": [
+                    {
+                        "name": "tipo_producto",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Bebidas",
+                                        "maxLength": 255
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Gaseosas y jugos",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tipo de producto actualizado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Tipos de producto"
+                ],
+                "summary": "Eliminar (desactivar) un tipo de producto",
+                "operationId": "5cf3bd406c81b6d08787604df0f5c878",
+                "parameters": [
+                    {
+                        "name": "tipo_producto",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tipo de producto eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/unidad-medidas": {
+            "get": {
+                "tags": [
+                    "Unidades de medida"
+                ],
+                "summary": "Listar unidades de medida activas",
+                "operationId": "00645e4aea5218a3c119854ab7ce4013",
+                "responses": {
+                    "200": {
+                        "description": "Unidades de medida obtenidas correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Unidades de medida"
+                ],
+                "summary": "Registrar una unidad de medida",
+                "operationId": "b303b01c0f154d56dbddceec72441481",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "abreviatura",
+                                    "factor_conversion"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Kilogramo",
+                                        "maxLength": 255
+                                    },
+                                    "abreviatura": {
+                                        "type": "string",
+                                        "example": "kg",
+                                        "maxLength": 50
+                                    },
+                                    "factor_conversion": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1000,
+                                        "minimum": 0
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true,
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Unidad de medida creada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/unidad-medidas/{unidad_medida}": {
+            "get": {
+                "tags": [
+                    "Unidades de medida"
+                ],
+                "summary": "Obtener una unidad de medida",
+                "operationId": "0be54ecfe8ecfec4e8bc8391490fcfd6",
+                "parameters": [
+                    {
+                        "name": "unidad_medida",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unidad de medida obtenida correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Unidades de medida"
+                ],
+                "summary": "Actualizar una unidad de medida",
+                "operationId": "5e0733750da6cd9e8ce1551d438a064d",
+                "parameters": [
+                    {
+                        "name": "unidad_medida",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "abreviatura",
+                                    "factor_conversion"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Kilogramo",
+                                        "maxLength": 255
+                                    },
+                                    "abreviatura": {
+                                        "type": "string",
+                                        "example": "kg",
+                                        "maxLength": 50
+                                    },
+                                    "factor_conversion": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1000,
+                                        "minimum": 0
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true,
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Unidad de medida actualizada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Unidades de medida"
+                ],
+                "summary": "Eliminar (desactivar) una unidad de medida",
+                "operationId": "d19f7d2b74b0ea86e602f11c218cd1d4",
+                "parameters": [
+                    {
+                        "name": "unidad_medida",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unidad de medida eliminada"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/usuarios": {
+            "get": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Listar usuarios activos con sus roles",
+                "operationId": "d57cb6c6a223fe9801b81b52dcac45df",
+                "responses": {
+                    "200": {
+                        "description": "Usuarios obtenidos correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Registrar un usuario con roles",
+                "operationId": "96d159a6919ad7ade81fd7af5c7a6be8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "roles",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "María López",
+                                        "maxLength": 120
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "maria.lopez@krosty.com",
+                                        "maxLength": 180
+                                    },
+                                    "roles": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "Administrador"
+                                        ],
+                                        "minItems": 1
+                                    },
+                                    "password": {
+                                        "description": "Mínimo 8 caracteres, mayúsculas, minúsculas y números",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Krosty2026Seg",
+                                        "minLength": 8
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Krosty2026Seg"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/usuarios/{user}": {
+            "get": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Obtener un usuario con sus roles",
+                "operationId": "85a962edc4861bd18578ba985d837bfa",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Actualizar un usuario y sus roles",
+                "operationId": "7d19c4df72bbd84259c10c92fe66f85a",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "roles"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "María López",
+                                        "maxLength": 120
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "maria.lopez@krosty.com",
+                                        "maxLength": 180
+                                    },
+                                    "roles": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "Administrador"
+                                        ],
+                                        "minItems": 1
+                                    },
+                                    "password": {
+                                        "description": "Opcional. Mínimo 8 caracteres, mayúsculas, minúsculas y números",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Krosty2026Seg",
+                                        "nullable": true,
+                                        "minLength": 8
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Krosty2026Seg",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuario actualizado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Eliminar (desactivar) un usuario",
+                "operationId": "a976a7c5aef6d0e40e4cf72fdeaadcfc",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/ventas": {
+            "get": {
+                "tags": [
+                    "Ventas"
+                ],
+                "summary": "Listar ventas",
+                "description": "Devuelve las ventas activas con cliente y pagos, ordenadas por id descendente.",
+                "operationId": "7200a0c21955c5c2e38bb2152b611948",
+                "responses": {
+                    "200": {
+                        "description": "Ventas obtenidas correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ventas"
+                ],
+                "summary": "Registrar venta",
+                "description": "Crea la venta con su detalle (productos[i] con cantidades[i]; el precio unitario se toma del producto) y descuenta el stock de cada producto vendido, incluidos los componentes de combos. Registra los pagos en efectivo y/o QR: debe haber al menos un pago y la suma de pagos debe ser igual al total.",
+                "operationId": "05dc944898fc7db5815b08941d07f48d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cliente_id",
+                                    "total",
+                                    "productos",
+                                    "cantidades",
+                                    "precios"
+                                ],
+                                "properties": {
+                                    "cliente_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fecha_venta": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-03",
+                                        "nullable": true
+                                    },
+                                    "total": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 75,
+                                        "minimum": 0
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true,
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "descuento": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 0,
+                                        "nullable": true,
+                                        "minimum": 0
+                                    },
+                                    "pago_efectivo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50,
+                                        "nullable": true,
+                                        "minimum": 0
+                                    },
+                                    "pago_qr": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 25,
+                                        "nullable": true,
+                                        "minimum": 0
+                                    },
+                                    "productos": {
+                                        "description": "IDs de productos",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            2,
+                                            5
+                                        ],
+                                        "minItems": 1
+                                    },
+                                    "cantidades": {
+                                        "description": "Cantidad por producto (mismo orden que productos)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "minimum": 0.01
+                                        },
+                                        "example": [
+                                            2,
+                                            3
+                                        ]
+                                    },
+                                    "precios": {
+                                        "description": "Precio por producto (mismo orden que productos)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "minimum": 0
+                                        },
+                                        "example": [
+                                            30,
+                                            5
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Venta registrada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "422": {
+                        "description": "Error de validación o error al crear la venta (sin pagos, pagos distintos al total, stock insuficiente)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/ventas/{venta}": {
+            "get": {
+                "tags": [
+                    "Ventas"
+                ],
+                "summary": "Ver venta",
+                "description": "Devuelve la venta activa con cliente, detalle de productos y pagos.",
+                "operationId": "f302ac6710ba9ccf573c21b1b275df21",
+                "parameters": [
+                    {
+                        "name": "venta",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Venta obtenida correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Ventas"
+                ],
+                "summary": "Actualizar venta",
+                "description": "Actualiza los datos de cabecera de la venta. Se valida con las mismas reglas que el registro, pero no modifica el detalle, los pagos ni el stock.",
+                "operationId": "9f17fa24cb21b4c6621432244c3da69a",
+                "parameters": [
+                    {
+                        "name": "venta",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cliente_id",
+                                    "total",
+                                    "productos",
+                                    "cantidades",
+                                    "precios"
+                                ],
+                                "properties": {
+                                    "cliente_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fecha_venta": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-03",
+                                        "nullable": true
+                                    },
+                                    "total": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 75,
+                                        "minimum": 0
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true,
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "descuento": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 0,
+                                        "nullable": true,
+                                        "minimum": 0
+                                    },
+                                    "pago_efectivo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50,
+                                        "nullable": true,
+                                        "minimum": 0
+                                    },
+                                    "pago_qr": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 25,
+                                        "nullable": true,
+                                        "minimum": 0
+                                    },
+                                    "productos": {
+                                        "description": "IDs de productos",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            2,
+                                            5
+                                        ],
+                                        "minItems": 1
+                                    },
+                                    "cantidades": {
+                                        "description": "Cantidad por producto (mismo orden que productos)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "minimum": 0.01
+                                        },
+                                        "example": [
+                                            2,
+                                            3
+                                        ]
+                                    },
+                                    "precios": {
+                                        "description": "Precio por producto (mismo orden que productos)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "minimum": 0
+                                        },
+                                        "example": [
+                                            30,
+                                            5
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Venta actualizada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ventas"
+                ],
+                "summary": "Anular venta",
+                "description": "Anula la venta (estado = 0 en venta, detalles y pagos) y repone al stock los productos vendidos, incluidos los componentes de combos.",
+                "operationId": "23d04c97a01b67d6328fb919a8b2e80b",
+                "parameters": [
+                    {
+                        "name": "venta",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Venta anulada y stock repuesto"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "No se pudo anular la venta (por ejemplo, ya estaba anulada)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Token obtenido en POST /api/login. Ingresar solo el token, sin la palabra Bearer.",
+                "bearerFormat": "Token",
+                "scheme": "bearer"
             }
         }
     },
     "tags": [
         {
+            "name": "Autenticación",
+            "description": "Autenticación"
+        },
+        {
             "name": "Clientes",
             "description": "Clientes"
         },
         {
-            "name": "Componentes de Producto",
-            "description": "Componentes de Producto"
+            "name": "Composición de productos",
+            "description": "Composición de productos"
+        },
+        {
+            "name": "Ingresos de bebidas",
+            "description": "Ingresos de bebidas"
+        },
+        {
+            "name": "Ingresos de insumos",
+            "description": "Ingresos de insumos"
+        },
+        {
+            "name": "Insumos",
+            "description": "Insumos"
+        },
+        {
+            "name": "Mermas",
+            "description": "Mermas"
+        },
+        {
+            "name": "Órdenes de producción",
+            "description": "Órdenes de producción"
+        },
+        {
+            "name": "Producción",
+            "description": "Producción"
+        },
+        {
+            "name": "Productos",
+            "description": "Productos"
+        },
+        {
+            "name": "Reglas de conversión",
+            "description": "Reglas de conversión"
+        },
+        {
+            "name": "Reportes",
+            "description": "Reportes"
+        },
+        {
+            "name": "Asignación de roles",
+            "description": "Asignación de roles"
+        },
+        {
+            "name": "Roles",
+            "description": "Roles"
+        },
+        {
+            "name": "Tipos de producto",
+            "description": "Tipos de producto"
+        },
+        {
+            "name": "Unidades de medida",
+            "description": "Unidades de medida"
+        },
+        {
+            "name": "Usuarios",
+            "description": "Usuarios"
+        },
+        {
+            "name": "Ventas",
+            "description": "Ventas"
         }
     ]
 }

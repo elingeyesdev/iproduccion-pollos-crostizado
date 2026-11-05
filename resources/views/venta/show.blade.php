@@ -3,6 +3,7 @@
 @section('title', 'Detalle de Venta #' . $venta->id)
 
 @section('content')
+<div class="venta-screen">
     <x-crud.page-header title="Detalle de Venta" :subtitle="'Comprobante de venta #' . $venta->id">
         <x-slot:actions>
             <a href="{{ route('ventas.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
@@ -90,22 +91,101 @@
             </div>
         </div>
     </div>
+</div>
+
+    {{-- Ticket de venta: solo visible al imprimir (ancho 12 cm) --}}
+    <div class="ticket-print">
+        <div class="ticket-center">
+            <div class="ticket-title">{{ config('app.name') === 'Laravel' ? 'KROSTY-SADO' : config('app.name', 'KROSTY-SADO') }}</div>
+            <div>Comprobante de venta #{{ $venta->id }}</div>
+            <div>Fecha: {{ \Carbon\Carbon::parse($venta->fecha_venta)->format('d/m/Y') }}</div>
+            <div>Cliente: {{ $venta->cliente?->nombre ?? 'N/A' }}</div>
+        </div>
+
+        <hr class="ticket-sep">
+
+        <table class="ticket-table">
+            <thead>
+                <tr>
+                    <th class="text-start">Producto</th>
+                    <th class="text-center">Cant.</th>
+                    <th class="text-end">P. Unit.</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($venta->detalles as $detalle)
+                    <tr>
+                        <td>{{ $detalle->producto?->nombre }}</td>
+                        <td class="text-center">{{ number_format($detalle->cantidad, 0) }}</td>
+                        <td class="text-end">{{ number_format($detalle->precio_unitario, 2) }}</td>
+                        <td class="text-end">{{ number_format($detalle->sub_total, 2) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <hr class="ticket-sep">
+
+        <table class="ticket-table">
+            <tr><td>SUBTOTAL</td><td class="text-end">Bs {{ number_format($venta->total + $venta->descuento, 2) }}</td></tr>
+            <tr><td>DESCUENTO</td><td class="text-end">- Bs {{ number_format($venta->descuento, 2) }}</td></tr>
+            <tr class="ticket-total"><td>TOTAL</td><td class="text-end">Bs {{ number_format($venta->total, 2) }}</td></tr>
+        </table>
+
+        @if($venta->pagos->isNotEmpty())
+            <hr class="ticket-sep">
+            <table class="ticket-table">
+                @foreach($venta->pagos as $pago)
+                    <tr><td>Pago {{ $pago->metodo_pago }}</td><td class="text-end">Bs {{ number_format($pago->monto, 2) }}</td></tr>
+                @endforeach
+            </table>
+        @endif
+
+        <hr class="ticket-sep">
+        <div class="ticket-center">¡Gracias por su compra!</div>
+    </div>
 @endsection
 
 @push('styles')
 <style>
+    .ticket-print { display: none; }
+
     @media print {
-        .app-sidebar, .app-navbar, .btn-outline-secondary, .btn-app-primary {
+        @page {
+            size: 120mm auto;
+            margin: 4mm;
+        }
+        html, body {
+            width: 120mm;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+        }
+        .app-sidebar, .app-navbar, .app-footer, .offcanvas, .venta-screen {
             display: none !important;
         }
-        .app-main {
-            margin-left: 0 !important;
+        .app-shell, .app-main, main, main > .container-fluid {
+            display: block !important;
+            margin: 0 !important;
             padding: 0 !important;
+            min-height: 0 !important;
+            width: auto !important;
         }
-        .card-elevated {
-            box-shadow: none !important;
-            border: 1px solid #eee !important;
+        .ticket-print {
+            display: block;
+            width: 112mm;
+            font-family: 'Courier New', monospace;
+            font-size: 9pt;
+            color: #000;
         }
+        .ticket-center { text-align: center; }
+        .ticket-title { font-size: 12pt; font-weight: bold; text-transform: uppercase; }
+        .ticket-sep { border: 0; border-top: 1px dashed #000; margin: 2mm 0; opacity: 1; }
+        .ticket-table { width: 100%; border-collapse: collapse; }
+        .ticket-table th, .ticket-table td { padding: 0.5mm 0; vertical-align: top; }
+        .ticket-table th { border-bottom: 1px dashed #000; }
+        .ticket-total td { font-size: 11pt; font-weight: bold; }
     }
 </style>
 @endpush

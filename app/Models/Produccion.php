@@ -34,10 +34,10 @@ class Produccion extends Model
         return $this->hasOneThrough(
             OrdenProduccion::class,
             OrdenProduccionInsumo::class,
-            'orden_produccion_id',
-            'id',
-            'orden_produccion_insumo_id',
-            'id'
+            'id',                          // orden_produccion_insumo.id
+            'id',                          // orden_producciones.id
+            'orden_produccion_insumo_id',  // producciones.orden_produccion_insumo_id
+            'orden_produccion_id'          // orden_produccion_insumo.orden_produccion_id
         );
     }
 
@@ -59,6 +59,19 @@ class Produccion extends Model
     public function mermas(): HasMany
     {
         return $this->hasMany(Merma::class);
+    }
+
+    // Un lote ejecutado crea una fila por insumo de la orden en la misma transacción.
+    public function scopeDelMismoLote(Builder $query, Produccion $produccion): Builder
+    {
+        $produccion->loadMissing('ordenProduccionInsumo');
+
+        return $query
+            ->whereHas('ordenProduccionInsumo', fn ($q) => $q->where(
+                'orden_produccion_id',
+                $produccion->ordenProduccionInsumo?->orden_produccion_id
+            ))
+            ->where('created_at', $produccion->created_at);
     }
 
     // Eager load del detalle planificado en la orden asociada.

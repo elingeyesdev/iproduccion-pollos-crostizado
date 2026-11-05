@@ -49,12 +49,6 @@ class PermissionSeeder extends Seeder
             ['key' => 'mermas',             'label' => 'Mermas'],
             ['key' => 'ventas',             'label' => 'Ventas'],
 
-            // Sub-módulos / Detalles
-            ['key' => 'detalle-insumo-productos',  'label' => 'Detalle Insumo / Producto'],
-            ['key' => 'produccion-productos',      'label' => 'Productos de Producción'],
-            ['key' => 'detalle-ingreso-bebidas',   'label' => 'Detalle Ingreso de Bebidas'],
-            ['key' => 'detalle-ventas',            'label' => 'Detalle de Ventas'],
-
             // Reportes (solo ver/buscar, pero se crean las 5 acciones por consistencia)
             ['key' => 'reportes',           'label' => 'Reportes'],
         ];
@@ -68,7 +62,6 @@ class PermissionSeeder extends Seeder
         $modulosVenta = [
             'clientes',
             'ventas',
-            'detalle-ventas',
             'productos',
             'reportes',
         ];
@@ -87,18 +80,14 @@ class PermissionSeeder extends Seeder
             'productos-composicion',
             'ingreso-insumos',
             'ingreso-bebidas',
-            'detalle-ingreso-bebidas',
             'orden-producciones',
             'producciones',
-            'detalle-insumo-productos',
-            'produccion-productos',
             'mermas',
             'unidad-medidas',
             'tipo-productos',
             'regla-conversiones',
             'clientes',
             'ventas',
-            'detalle-ventas',
             'reportes',
         ];
 

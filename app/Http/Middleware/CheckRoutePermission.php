@@ -35,7 +35,7 @@ class CheckRoutePermission
         $module = implode('.', $parts);
 
         if ($module === 'users.roles') {
-            return $action === 'update' ? 'role-assignments.editar' : 'role-assignments.editar';
+            return 'role-assignments.editar';
         }
 
         if ($module === '' || in_array($module, ['profile'], true)) {
@@ -45,6 +45,7 @@ class CheckRoutePermission
         $actions = [
             'index' => 'buscar',
             'show' => 'ver',
+            'pdf' => 'ver',
             'create' => 'crear',
             'store' => 'crear',
             'edit' => 'editar',

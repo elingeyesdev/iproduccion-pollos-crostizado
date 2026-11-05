@@ -18,6 +18,8 @@ class ProductoRequest extends FormRequest
             'precio' => 'required|numeric|min:0',
             'tipo_producto_id' => 'required|exists:tipo_productos,id',
             'cantidad_actual' => 'required|integer|min:0',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'quitar_imagen' => 'nullable|boolean',
         ];
     }
 
@@ -28,6 +30,7 @@ class ProductoRequest extends FormRequest
             'precio' => 'precio',
             'tipo_producto_id' => 'tipo de producto',
             'cantidad_actual' => 'cantidad actual',
+            'imagen' => 'foto del producto',
         ];
     }
 
@@ -48,6 +51,10 @@ class ProductoRequest extends FormRequest
             'cantidad_actual.required' => 'La cantidad actual es obligatoria.',
             'cantidad_actual.integer' => 'La cantidad actual debe ser un número entero.',
             'cantidad_actual.min' => 'La cantidad actual no puede ser negativa.',
+
+            'imagen.image' => 'El archivo debe ser una imagen.',
+            'imagen.mimes' => 'La foto debe ser JPG, PNG o WEBP.',
+            'imagen.max' => 'La foto no puede pesar más de 2 MB.',
         ];
     }
 }

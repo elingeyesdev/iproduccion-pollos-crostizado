@@ -8,18 +8,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Producto extends Model
 {
-    protected $fillable = ['nombre', 'precio', 'tipo_producto_id', 'cantidad_actual', 'estado'];
+    protected $fillable = ['nombre', 'imagen', 'precio', 'tipo_producto_id', 'cantidad_actual', 'estado'];
+
+    // URL pública de la foto (disco "public"), o null si el producto no tiene foto.
+    public function getImagenUrlAttribute(): ?string
+    {
+        return $this->imagen ? asset('storage/' . $this->imagen) : null;
+    }
 
     public function tipoProducto(): BelongsTo
     {
         return $this->belongsTo(TipoProducto::class);
-    }
-
-    public function componentes(): BelongsToMany
-    {
-        return $this->belongsToMany(ComponenteProducto::class, 'componente_producto_producto')
-            ->withPivot(['cantidad', 'estado'])
-            ->withTimestamps();
     }
 
     // Un producto (combo) está compuesto por otros productos
