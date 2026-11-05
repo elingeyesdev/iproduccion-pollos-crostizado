@@ -1,6 +1,6 @@
 @extends('layouts.crud')
 
-@section('title', 'Indicadores de gestión')
+@section('title', 'Indicadores de gestión (KPI)')
 
 @php
     // [clave, etiqueta, valor formateado, icono, ¿subir es bueno?, ayuda]
@@ -31,7 +31,7 @@
 @endphp
 
 @section('content')
-    <x-crud.page-header title="Indicadores de gestión" subtitle="Métricas clave para la toma de decisiones del administrador.">
+    <x-crud.page-header title="Indicadores de gestión (KPI)" subtitle="Métricas clave para la toma de decisiones del administrador.">
         <x-slot:actions>
             <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
         </x-slot:actions>
