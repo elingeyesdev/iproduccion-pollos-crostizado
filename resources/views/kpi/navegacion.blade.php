@@ -1,9 +1,9 @@
 <div class="row g-3 mb-4">
     @php
         $secciones = [
-            ['clave' => 'ventas', 'titulo' => 'Administración de Ventas', 'descripcion' => 'Ingresos, ventas, ticket promedio y clientes atendidos.', 'icono' => 'fa-solid fa-cash-register', 'ruta' => 'kpi.ventas'],
-            ['clave' => 'finanzas', 'titulo' => 'Finanzas y Rentabilidad', 'descripcion' => 'Compras, resultado y margen bruto, descuentos e inventario.', 'icono' => 'fa-solid fa-chart-pie', 'ruta' => 'kpi.finanzas'],
-            ['clave' => 'produccion', 'titulo' => 'Control de Producción', 'descripcion' => 'Producto obtenido, rendimiento, mermas y órdenes.', 'icono' => 'fa-solid fa-industry', 'ruta' => 'kpi.produccion'],
+            ['clave' => 'ventas', 'titulo' => 'KPI de Ventas', 'descripcion' => 'Ingresos, ventas, ticket promedio y clientes atendidos.', 'icono' => 'fa-solid fa-cash-register', 'ruta' => 'kpi.ventas'],
+            ['clave' => 'finanzas', 'titulo' => 'KPI Financieros y Rentabilidad', 'descripcion' => 'Compras, resultado y margen bruto, descuentos e inventario.', 'icono' => 'fa-solid fa-chart-pie', 'ruta' => 'kpi.finanzas'],
+            ['clave' => 'produccion', 'titulo' => 'KPI de Producción', 'descripcion' => 'Producto obtenido, rendimiento, mermas y órdenes.', 'icono' => 'fa-solid fa-industry', 'ruta' => 'kpi.produccion'],
         ];
     @endphp
 

@@ -53,9 +53,9 @@ return [
             'module_icon' => 'bi bi-graph-up-arrow',
             'items' => [
                 ['label' => 'Resumen de KPI', 'icon' => 'fa-solid fa-gauge-high', 'route' => 'kpi.index', 'active' => 'kpi.index'],
-                ['label' => 'Administración de Ventas', 'icon' => 'fa-solid fa-cash-register', 'route' => 'kpi.ventas', 'active' => 'kpi.ventas'],
-                ['label' => 'Finanzas y Rentabilidad', 'icon' => 'fa-solid fa-chart-pie', 'route' => 'kpi.finanzas', 'active' => 'kpi.finanzas'],
-                ['label' => 'Control de Producción', 'icon' => 'fa-solid fa-industry', 'route' => 'kpi.produccion', 'active' => 'kpi.produccion'],
+                ['label' => 'KPI de Ventas', 'icon' => 'fa-solid fa-cash-register', 'route' => 'kpi.ventas', 'active' => 'kpi.ventas'],
+                ['label' => 'KPI Financieros y Rentabilidad', 'icon' => 'fa-solid fa-chart-pie', 'route' => 'kpi.finanzas', 'active' => 'kpi.finanzas'],
+                ['label' => 'KPI de Producción', 'icon' => 'fa-solid fa-industry', 'route' => 'kpi.produccion', 'active' => 'kpi.produccion'],
             ],
         ],
     ],
