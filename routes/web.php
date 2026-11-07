@@ -81,8 +81,14 @@ Route::middleware(['auth', 'route.permission'])->group(function () {
         ->middleware('no.store.sensitive')->name('reportes.produccion-mensual');
     Route::get('reportes/stock', [ReporteController::class, 'stock'])
         ->middleware('no.store.sensitive')->name('reportes.stock');
-    Route::get('reportes/indicadores', [ReporteController::class, 'indicadores'])
-        ->middleware('no.store.sensitive')->name('reportes.indicadores');
+    Route::get('kpi', [ReporteController::class, 'indicadores'])
+        ->middleware('no.store.sensitive')->name('kpi.index');
+    Route::get('kpi/ventas', [ReporteController::class, 'kpiVentas'])
+        ->middleware('no.store.sensitive')->name('kpi.ventas');
+    Route::get('kpi/finanzas', [ReporteController::class, 'kpiFinanzas'])
+        ->middleware('no.store.sensitive')->name('kpi.finanzas');
+    Route::get('kpi/produccion', [ReporteController::class, 'kpiProduccion'])
+        ->middleware('no.store.sensitive')->name('kpi.produccion');
 
     Route::resource('ingreso-bebidas', IngresoBebidaController::class);
     Route::resource('mermas', MermaController::class);
@@ -99,4 +105,3 @@ Route::middleware(['auth', 'route.permission'])->group(function () {
 
 
 require __DIR__.'/auth.php';
-

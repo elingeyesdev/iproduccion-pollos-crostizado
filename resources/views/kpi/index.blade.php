@@ -3,35 +3,13 @@
 @section('title', 'Indicadores de gestión (KPI)')
 
 @php
-    // [clave, etiqueta, valor formateado, icono, ¿subir es bueno?, ayuda]
-    $kpis = [
-        'Ventas' => [
-            ['ingresos', 'Ingresos por ventas', 'Bs ' . number_format($actual['ingresos'], 2), 'fa-solid fa-sack-dollar', true, 'Total de ventas activas del período.'],
-            ['num_ventas', 'N° de ventas', number_format($actual['num_ventas']), 'fa-solid fa-receipt', true, 'Cantidad de ventas registradas.'],
-            ['ticket_promedio', 'Ticket promedio', 'Bs ' . number_format($actual['ticket_promedio'], 2), 'fa-solid fa-tag', true, 'Ingresos ÷ N° de ventas.'],
-            ['clientes_atendidos', 'Clientes atendidos', number_format($actual['clientes_atendidos']), 'fa-solid fa-users', true, 'Clientes distintos que compraron.'],
-        ],
-        'Rentabilidad' => [
-            ['gasto_insumos', 'Compras de insumos', 'Bs ' . number_format($actual['gasto_insumos'], 2), 'fa-solid fa-truck-ramp-box', false, 'Cantidad × precio unitario de los ingresos de insumos.'],
-            ['resultado_bruto', 'Resultado bruto', 'Bs ' . number_format($actual['resultado_bruto'], 2), 'fa-solid fa-scale-balanced', true, 'Ingresos por ventas − compras de insumos. Margen: ' . number_format($actual['margen_bruto'], 1) . '%.'],
-            [null, 'Descuentos otorgados', 'Bs ' . number_format($actual['descuentos'], 2), 'fa-solid fa-percent', false, 'Suma de descuentos aplicados en ventas.'],
-            [null, 'Valor del inventario', 'Bs ' . number_format($valorInventario, 2), 'fa-solid fa-warehouse', true, 'Stock actual de productos × precio de venta.'],
-        ],
-        'Producción' => [
-            ['cantidad_obtenida', 'Producto obtenido', number_format($actual['cantidad_obtenida'], 2), 'fa-solid fa-drumstick-bite', true, 'Unidades producidas en el período.'],
-            ['rendimiento', 'Rendimiento', number_format($actual['rendimiento'], 2) . ' x', 'fa-solid fa-gauge-high', true, 'Producto obtenido ÷ insumo consumido (' . number_format($actual['cantidad_insumo'], 2) . ').'],
-            ['pct_merma', '% de merma', number_format($actual['pct_merma'], 1) . '%', 'fa-solid fa-trash-can', false, 'Mermas (' . number_format($actual['mermas'], 2) . ') ÷ producto obtenido.'],
-            [null, 'Cumplimiento de órdenes', number_format($actual['cumplimiento'], 0) . '%', 'fa-solid fa-clipboard-check', true, $actual['ordenes_ejecutadas'] . ' de ' . $actual['ordenes_programadas'] . ' órdenes programadas ejecutadas. Pendientes totales: ' . $ordenesPendientes . '.'],
-        ],
-    ];
-
     $maxProducto = (float) ($topProductos->max('monto_total') ?: 1);
     $maxCliente = (float) ($topClientes->max('monto_total') ?: 1);
     $totalPagos = (float) ($metodosPago->sum('monto_total') ?: 1);
 @endphp
 
 @section('content')
-    <x-crud.page-header title="Indicadores de gestión (KPI)" subtitle="Métricas clave para la toma de decisiones del administrador.">
+    <x-crud.page-header title="Resumen de KPI" subtitle="Selecciona el área de indicadores que deseas consultar.">
         <x-slot:actions>
             <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
         </x-slot:actions>
@@ -39,7 +17,7 @@
 
     <div class="card card-elevated mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('reportes.indicadores') }}" class="row g-2 align-items-end">
+            <form method="GET" action="{{ route('kpi.index') }}" class="row g-2 align-items-end">
                 <div class="col-md-4">
                     <label for="desde" class="form-label fw-semibold">Desde</label>
                     <input id="desde" type="date" name="desde" value="{{ $desde->toDateString() }}" class="form-control">
@@ -50,7 +28,7 @@
                 </div>
                 <div class="col-md-4 d-flex gap-2">
                     <button class="btn btn-app-primary" type="submit"><i class="fa-solid fa-magnifying-glass me-1"></i> Consultar</button>
-                    <a href="{{ route('reportes.indicadores') }}" class="btn btn-outline-secondary">Mes actual</a>
+                    <a href="{{ route('kpi.index') }}" class="btn btn-outline-secondary">Mes actual</a>
                 </div>
             </form>
             <p class="text-muted small mb-0 mt-2">
@@ -76,37 +54,7 @@
         </div>
     @endif
 
-    {{-- ===== KPIs ===== --}}
-    @foreach ($kpis as $grupo => $tarjetas)
-        <h5 class="fw-bold mb-2">{{ $grupo }}</h5>
-        <div class="row g-3 mb-4">
-            @foreach ($tarjetas as [$clave, $etiqueta, $valor, $icono, $subirEsBueno, $ayuda])
-                @php
-                    $pct = $clave ? $variaciones[$clave] : null;
-                    $color = $pct === null || $pct == 0 ? 'text-muted' : (($pct > 0) === $subirEsBueno ? 'text-success' : 'text-danger');
-                @endphp
-                <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="card card-elevated h-100">
-                        <div class="card-body">
-                            <p class="text-muted small mb-1"><i class="{{ $icono }} me-1"></i> {{ $etiqueta }}</p>
-                            <h3 class="fw-bold mb-1">{{ $valor }}</h3>
-                            @if ($clave)
-                                <span class="small fw-semibold {{ $color }}">
-                                    @if ($pct === null)
-                                        Sin datos del período anterior
-                                    @else
-                                        <i class="fa-solid {{ $pct > 0 ? 'fa-arrow-trend-up' : ($pct < 0 ? 'fa-arrow-trend-down' : 'fa-minus') }}"></i>
-                                        {{ $pct > 0 ? '+' : '' }}{{ $pct }}% vs período anterior
-                                    @endif
-                                </span>
-                            @endif
-                            <p class="text-muted small mb-0 mt-1">{{ $ayuda }}</p>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    @endforeach
+    @include('kpi.navegacion', ['activo' => 'resumen'])
 
     {{-- ===== TENDENCIA DE VENTAS ===== --}}
     <div class="card card-elevated mb-4">

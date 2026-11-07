@@ -22,7 +22,7 @@ class CheckRoutePermission
 
     public static function permissionForRoute(string $routeName): ?string
     {
-        if (str_starts_with($routeName, 'reportes.')) {
+        if (str_starts_with($routeName, 'reportes.') || str_starts_with($routeName, 'kpi.')) {
             return 'reportes.buscar';
         }
 
