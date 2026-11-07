@@ -73,10 +73,30 @@ class ReporteController extends Controller
 
     public function indicadores(Request $request): View
     {
+        return view('kpi.index', $this->datosIndicadores($request));
+    }
+
+    public function kpiVentas(Request $request): View
+    {
+        return view('kpi.ventas', $this->datosIndicadores($request));
+    }
+
+    public function kpiFinanzas(Request $request): View
+    {
+        return view('kpi.finanzas', $this->datosIndicadores($request));
+    }
+
+    public function kpiProduccion(Request $request): View
+    {
+        return view('kpi.produccion', $this->datosIndicadores($request));
+    }
+
+    private function datosIndicadores(Request $request): array
+    {
         [$desde, $hasta] = $this->reportes->rangoIndicadores($request->input('desde'), $request->input('hasta'));
         $reporte = $this->reportes->indicadores($desde, $hasta);
 
-        return view('reportes.indicadores', [
+        return [
             'desde' => $reporte['desde'],
             'hasta' => $reporte['hasta'],
             'antDesde' => $reporte['ant_desde'],
@@ -92,6 +112,6 @@ class ReporteController extends Controller
             'valorInventario' => $reporte['valor_inventario'],
             'productosSinRotacion' => $reporte['productos_sin_rotacion'],
             'ordenesPendientes' => $reporte['ordenes_pendientes'],
-        ]);
+        ];
     }
 }
