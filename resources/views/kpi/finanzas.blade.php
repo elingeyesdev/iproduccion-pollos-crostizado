@@ -1,9 +1,9 @@
 @extends('layouts.crud')
 
-@section('title', 'KPI de Finanzas y Rentabilidad')
+@section('title', 'KPI Financieros y Rentabilidad')
 
 @section('content')
-    <x-crud.page-header title="KPI de Administración Financiera y Rentabilidad" subtitle="Indicadores de costos, rentabilidad y valoración del inventario.">
+    <x-crud.page-header title="KPI Financieros y Rentabilidad" subtitle="Indicadores de costos, rentabilidad y valoración del inventario.">
         <x-slot:actions>
             <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
         </x-slot:actions>

@@ -22,14 +22,14 @@ class KpiScreensTest extends TestCase
         $this->actingAs($user)
             ->get(route('kpi.ventas'))
             ->assertOk()
-            ->assertSee('KPI de Administración de Ventas');
+            ->assertSee('KPI de Ventas');
 
         $this->get(route('kpi.finanzas'))
             ->assertOk()
-            ->assertSee('KPI de Administración Financiera y Rentabilidad');
+            ->assertSee('KPI Financieros y Rentabilidad');
 
         $this->get(route('kpi.produccion'))
             ->assertOk()
-            ->assertSee('KPI de Control de Producción');
+            ->assertSee('KPI de Producción');
     }
 }

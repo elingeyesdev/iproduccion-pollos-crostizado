@@ -1,9 +1,9 @@
 @extends('layouts.crud')
 
-@section('title', 'KPI de Administración de Ventas')
+@section('title', 'KPI de Ventas')
 
 @section('content')
-    <x-crud.page-header title="KPI de Administración de Ventas" subtitle="Indicadores del desempeño comercial para el período seleccionado.">
+    <x-crud.page-header title="KPI de Ventas" subtitle="Indicadores del desempeño comercial para el período seleccionado.">
         <x-slot:actions>
             <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Volver</a>
         </x-slot:actions>
